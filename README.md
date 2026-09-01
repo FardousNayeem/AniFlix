@@ -39,6 +39,7 @@ To skip activating, call the interpreter directly:
 .venv/bin/python manage.py runserver
 ```
 
+---
 
 ## Layout
 
@@ -73,22 +74,6 @@ is why the same invariant cannot be enforced two different ways in two
 different places, and why the rules are testable without a request.
 
 ---
-
-### What is interactive
-
-| Behaviour                | Where                    | Falls back to                     |
-| ------------------------ | ------------------------ | --------------------------------- |
-| Instant search + `/` key | catalogue pages          | a plain GET search form           |
-| Add to cart              | shop, product page       | a normal POST and redirect        |
-| Cart quantity and totals | cart page, patched live  | a normal POST and redirect        |
-| Rating                   | anime page, saves on pick| a submit button                   |
-| My List toggle           | posters, anime page      | a normal POST and redirect        |
-| Spotlight rotation       | home                     | the first title, statically       |
-| Rail arrows              | trending, related        | native horizontal scrolling       |
-| Episode arrow keys       | player                   | the previous/next buttons         |
-| Copy reference           | receipts, tickets        | selecting the text                |
-| Back to top              | every page               | scrolling                         |
-
 
 ## Configuration
 
