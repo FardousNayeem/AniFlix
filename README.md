@@ -23,7 +23,6 @@ cp .env.example .env
 python -c "from django.core.management.utils import get_random_secret_key as k; print(k())"
 # paste that into DJANGO_SECRET_KEY in .env
 
-python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 ```
@@ -40,22 +39,6 @@ To skip activating, call the interpreter directly:
 .venv/bin/python manage.py runserver
 ```
 
-### Bringing the old data across
-
-The previous build kept everything in one `base` app and used one table for
-both carts and placed orders. Rather than perform migration surgery on that
-shape, there is an importer that reads the old database directly:
-
-```bash
-python manage.py import_legacy /path/to/old/db.sqlite3 \
-    --media-source /path/to/old/anime/static/images
-```
-
-It is idempotent (safe to re-run) and supports `--dry-run`. What it maps, and
-which duplicates it collapses, is documented at the top of
-`apps/core/management/commands/import_legacy.py`.
-
----
 
 ## Layout
 
@@ -90,6 +73,22 @@ is why the same invariant cannot be enforced two different ways in two
 different places, and why the rules are testable without a request.
 
 ---
+
+### What is interactive
+
+| Behaviour                | Where                    | Falls back to                     |
+| ------------------------ | ------------------------ | --------------------------------- |
+| Instant search + `/` key | catalogue pages          | a plain GET search form           |
+| Add to cart              | shop, product page       | a normal POST and redirect        |
+| Cart quantity and totals | cart page, patched live  | a normal POST and redirect        |
+| Rating                   | anime page, saves on pick| a submit button                   |
+| My List toggle           | posters, anime page      | a normal POST and redirect        |
+| Spotlight rotation       | home                     | the first title, statically       |
+| Rail arrows              | trending, related        | native horizontal scrolling       |
+| Episode arrow keys       | player                   | the previous/next buttons         |
+| Copy reference           | receipts, tickets        | selecting the text                |
+| Back to top              | every page               | scrolling                         |
+
 
 ## Configuration
 
@@ -144,44 +143,3 @@ that one user cannot read another user's order, that state changes reject GET,
 and that private pages redirect anonymous visitors.
 
 ---
-
-## Front end
-
-No jQuery, no Bootstrap, no build step. `static/css/tokens.css` holds the whole
-palette, radius scale and type scale; every other stylesheet reads from it.
-
-The theme is committed dark, deliberately: this is a product people watch video
-in, and the brand was already dark navy. There is no light variant to drift out
-of sync.
-
-`static/js/app.js` is one file of progressive enhancement. Every page works with
-scripting disabled, every animation honours `prefers-reduced-motion`, and there
-is no `scroll` event listener anywhere (IntersectionObserver instead).
-
-### What is interactive
-
-| Behaviour                | Where                    | Falls back to                     |
-| ------------------------ | ------------------------ | --------------------------------- |
-| Instant search + `/` key | catalogue pages          | a plain GET search form           |
-| Add to cart              | shop, product page       | a normal POST and redirect        |
-| Cart quantity and totals | cart page, patched live  | a normal POST and redirect        |
-| Rating                   | anime page, saves on pick| a submit button                   |
-| My List toggle           | posters, anime page      | a normal POST and redirect        |
-| Spotlight rotation       | home                     | the first title, statically       |
-| Rail arrows              | trending, related        | native horizontal scrolling       |
-| Episode arrow keys       | player                   | the previous/next buttons         |
-| Copy reference           | receipts, tickets        | selecting the text                |
-| Back to top              | every page               | scrolling                         |
-
-Two rules the front end sticks to. Nothing is JavaScript-only: every control
-above is a real form or link first. And nothing lies about state: the player,
-for instance, never hides a video frame on a timeout, because a slow frame and
-a blocked frame are indistinguishable from script.
-
-### A DOM trap worth knowing about
-
-A form control named `action` becomes a property of the form element and
-shadows `HTMLFormElement.action`, so `form.action` returns the input instead of
-the URL. The cart's operation field is called `op` for that reason, the
-JavaScript reads `form.getAttribute("action")`, and a test asserts no cart field
-uses a shadowing name.
