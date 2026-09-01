@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}{{ anime.name }} - {{ SITE_NAME }}{% endblock %}
+{% block meta_description %}{{ anime.synopsis|truncatewords:28 }}{% endblock %}
+
+{% block body %}
+  {# Layout family: poster rail + content column, over a dimmed backdrop. #}
+  <section class="title-hero">
+    <div class="title-hero__backdrop" aria-hidden="true">
+      {% if anime.backdrop_url %}<img src="{{ anime.backdrop_url }}" alt="">{% endif %}
+    </div>
+
+    <div class="shell">
+      <div class="title-hero__layout">
+        <div>
+          {% if anime.poster_url %}
+            <img class="title-hero__poster" src="{{ anime.poster_url }}" alt="Poster for {{ anime.name }}" fetchpriority="high">
+          {% else %}
+            <div class="title-hero__poster"></div>
+          {% endif %}
+        </div>
+
+        <div>
+          <p class="row row--tight">
+            <span class="badge badge--accent">{{ anime.get_status_display }}</span>
+            {% for genre in anime.genres.all %}
+              <a class="badge" href="{{ genre.get_absolute_url }}">{{ genre.name }}</a>
+            {% endfor %}
+          </p>
+
+          <h1 class="title-hero__name">{{ anime.name }}</h1>
+
+          <div class="title-hero__facts">
+            <span class="title-hero__fact"><i class="ph ph-calendar-blank" aria-hidden="true"></i> {{ anime.release_year }}</span>
+            {% if anime.studio %}<span class="title-hero__fact"><i class="ph ph-buildings" aria-hidden="true"></i> {{ anime.studio }}</span>{% endif %}
+            <span class="title-hero__fact"><i class="ph ph-monitor-play" aria-hidden="true"></i> {{ episodes|length }} episode{{ episodes|length|pluralize }}</span>
+            <span class="title-hero__fact"><i class="ph ph-eye" aria-hidden="true"></i> {{ anime.view_count|floatformat:0 }} views</span>
+          </div>
+
+          <p class="title-hero__synopsis">{{ anime.synopsis }}</p>
+
+          <div class="title-hero__actions">
+            {% if episodes %}
+              <a class="btn btn--primary btn--lg" href="{{ episodes.0.get_absolute_url }}">
+                <i class="ph ph-play-circle" aria-hidden="true"></i> Start episode 1
+              </a>
+            {% endif %}
+
+            {% if user.is_authenticated %}
+              <button class="btn btn--ghost btn--lg{% if in_watchlist %} is-active{% endif %}"
+                      type="button"
+                      aria-pressed="{% if in_watchlist %}true{% else %}false{% endif %}"
+                      data-title="{{ anime.name }}"
+                      data-watchlist-url="{% url 'streaming:anime-watchlist-toggle' anime.slug %}">
+                <i class="ph {% if in_watchlist %}ph-check{% else %}ph-plus{% endif %}" aria-hidden="true"></i>
+                <span data-watchlist-label>{% if in_watchlist %}In My List{% else %}Add to My List{% endif %}</span>
+              </button>
+            {% else %}
+              <a class="btn btn--ghost btn--lg" href="{% url 'account_login' %}?next={{ request.path|urlencode }}">
+                <i class="ph ph-plus" aria-hidden="true"></i> Sign in to save
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="page page--flush">
+    <div class="shell">
+      <div class="split split--sidebar">
+
+        <div class="stack-lg">
+          <section class="section">
+            <div class="section__head">
+              <h2 class="section__title">Episodes</h2>
+              {% if episodes %}<span class="text-muted text-mono">{{ episodes|length }}</span>{% endif %}
+            </div>
+
+            {% if episodes %}
+              <ol class="episode-list">
+                {% for episode in episodes %}
+                  <li>
+                    <a class="episode-row" href="{{ episode.get_absolute_url }}">
+                      <span class="episode-row__number">{{ episode.number }}</span>
+                      <span>
+                        <span class="episode-row__title">{{ episode.title }}</span>
+                        {% if not episode.is_playable %}
+                          <span class="badge badge--warning" style="margin-left: var(--space-2)">Coming soon</span>
+                        {% endif %}
+                      </span>
+                      <span class="episode-row__meta">
+                        {% if episode.air_date %}{{ episode.air_date|date:"j M Y" }}{% endif %}
+                        {% if episode.duration_minutes %} &middot; {{ episode.duration_minutes }} min{% endif %}
+                      </span>
+                    </a>
+                  </li>
+                {% endfor %}
+              </ol>
+            {% else %}
+              {% include "partials/empty_state.html" with icon="ph-monitor-play" title="No episodes yet" body="Episodes appear here as soon as they are added." %}
+            {% endif %}
+          </section>
+
+          {% if related %}
+            <section class="section">
+              <div class="section__head">
+                <h2 class="section__title">More like this</h2>
+              </div>
+              <div class="rail-wrap">
+                <button class="rail__nav rail__nav--prev" type="button" aria-label="Scroll left" hidden><i class="ph ph-caret-left" aria-hidden="true"></i></button>
+                <div class="rail">
+                {% for item in related %}
+                  {% include "partials/poster_card.html" with anime=item %}
+                {% endfor %}
+                </div>
+                <button class="rail__nav rail__nav--next" type="button" aria-label="Scroll right" hidden><i class="ph ph-caret-right" aria-hidden="true"></i></button>
+              </div>
+            </section>
+          {% endif %}
+        </div>
+
+        <aside class="stack">
+          <div class="rating-panel sticky-aside">
+            <div class="rating-panel__score">
+              <span class="rating-panel__number" data-rating-average>{% if anime.average_rating %}{{ anime.average_rating|floatformat:1 }}{% else %}--{% endif %}</span>
+              <span class="rating-panel__outof" data-rating-count>
+                {% if anime.rating_count %}from {{ anime.rating_count }} rating{{ anime.rating_count|pluralize }}{% else %}not rated yet{% endif %}
+              </span>
+            </div>
+            <span data-rating-stars>{% stars anime.average_rating %}</span>
+
+            {% if user.is_authenticated %}
+              <form method="post" action="{% url 'streaming:anime-rate' anime.slug %}" class="stack-sm" data-rating-form>
+                {% csrf_token %}
+                <p class="field__label">{% if user_score %}Your rating{% else %}Rate this title{% endif %}</p>
+                <div class="rating-input">
+                  {% for value in "54321" %}
+                    <input type="radio" name="score" id="score-{{ value }}" value="{{ value }}"
+                           {% if user_score|stringformat:"s" == value %}checked{% endif %}>
+                    <label for="score-{{ value }}" title="{{ value }} out of 5"><span class="visually-hidden">{{ value }} stars</span></label>
+                  {% endfor %}
+                </div>
+                <button class="btn btn--primary btn--sm btn--block" type="submit">
+                  {% if user_score %}Update rating{% else %}Submit rating{% endif %}
+                </button>
+                <p class="field__help text-center">Pick a star and it saves right away.</p>
+              </form>
+            {% else %}
+              <a class="btn btn--ghost btn--sm btn--block" href="{% url 'account_login' %}?next={{ request.path|urlencode }}">Sign in to rate</a>
+            {% endif %}
+          </div>
+
+          {% if anime.merchandise.exists %}
+            <div class="panel">
+              <h2 class="panel__title" style="margin-bottom: var(--space-4)">Merch for this title</h2>
+              <div class="stack-sm">
+                {% for product in anime.merchandise.all|slice:":3" %}
+                  <a class="row" href="{{ product.get_absolute_url }}" style="gap: var(--space-3)">
+                    {% if product.image_url %}
+                      <img class="line-item__thumb" style="width:48px;height:48px" src="{{ product.image_url }}" alt="" loading="lazy">
+                    {% endif %}
+                    <span class="spacer">
+                      <span style="display:block;font-weight:650">{{ product.name }}</span>
+                      <span class="text-accent text-mono">{{ product.price|money }}</span>
+                    </span>
+                  </a>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        </aside>
+
+      </div>
+    </div>
+  </div>
+{% endblock %}

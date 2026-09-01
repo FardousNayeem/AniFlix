@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}My profile - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  {# Layout family: identity band + stat row + detail panels. #}
+  <div class="page">
+    <div class="shell stack-lg">
+      <header class="profile-head">
+        <span class="avatar avatar--xl">
+          {% if profile_user.avatar_url %}
+            <img src="{{ profile_user.avatar_url }}" alt="">
+          {% else %}{{ profile_user.public_name|initials }}{% endif %}
+        </span>
+
+        <div>
+          <h1 class="profile-name">{{ profile_user.public_name }}</h1>
+          <p class="text-muted">{{ profile_user.email }}</p>
+          {% if profile_user.bio %}
+            <p class="text-soft measure" style="margin-top: var(--space-3)">{{ profile_user.bio }}</p>
+          {% endif %}
+        </div>
+
+        <a class="btn btn--primary" href="{% url 'accounts:profile-edit' %}">
+          <i class="ph ph-pencil-simple" aria-hidden="true"></i> Edit profile
+        </a>
+      </header>
+
+      <div class="stat-row">
+        <a class="stat" href="{% url 'accounts:watchlist' %}">
+          <p class="stat__value">{{ watchlist_count }}</p>
+          <p class="stat__label">Titles in My List</p>
+        </a>
+        <a class="stat" href="{% url 'events:my-registrations' %}">
+          <p class="stat__value">{{ event_count }}</p>
+          <p class="stat__label">Events registered</p>
+        </a>
+        <a class="stat" href="{% url 'shop:order-list' %}">
+          <p class="stat__value">{{ order_count }}</p>
+          <p class="stat__label">Orders placed</p>
+        </a>
+      </div>
+
+      <div class="split split--half">
+        <section class="panel">
+          <h2 class="panel__title" style="margin-bottom: var(--space-4)">Account</h2>
+          <dl class="detail-list">
+            <div class="detail-list__row">
+              <dt class="detail-list__label">Display name</dt>
+              <dd>{{ profile_user.display_name|default:"Not set" }}</dd>
+            </div>
+            <div class="detail-list__row">
+              <dt class="detail-list__label">Email</dt>
+              <dd>{{ profile_user.email }}</dd>
+            </div>
+            <div class="detail-list__row">
+              <dt class="detail-list__label">Gender</dt>
+              <dd>{{ profile_user.get_gender_display|default:"Prefer not to say" }}</dd>
+            </div>
+            <div class="detail-list__row">
+              <dt class="detail-list__label">Member since</dt>
+              <dd>{{ profile_user.date_joined|date:"F Y" }}</dd>
+            </div>
+            <div class="detail-list__row">
+              <dt class="detail-list__label">Newsletter</dt>
+              <dd>{% if profile_user.newsletter_opt_in %}Subscribed{% else %}Not subscribed{% endif %}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel__title" style="margin-bottom: var(--space-4)">Delivery</h2>
+          {% if profile_user.has_shipping_details %}
+            <dl class="detail-list">
+              <div class="detail-list__row">
+                <dt class="detail-list__label">Phone</dt>
+                <dd>{{ profile_user.phone }}</dd>
+              </div>
+              <div class="detail-list__row">
+                <dt class="detail-list__label">Address</dt>
+                <dd>{{ profile_user.address }}</dd>
+              </div>
+              <div class="detail-list__row">
+                <dt class="detail-list__label">City</dt>
+                <dd>{{ profile_user.city }}{% if profile_user.postcode %} {{ profile_user.postcode }}{% endif %}</dd>
+              </div>
+            </dl>
+          {% else %}
+            {% include "partials/empty_state.html" with icon="ph-map-pin" title="No delivery address" body="Add one so checkout fills itself in next time." action_url="/profile/edit/" action_label="Add address" %}
+          {% endif %}
+        </section>
+      </div>
+    </div>
+  </div>
+{% endblock %}

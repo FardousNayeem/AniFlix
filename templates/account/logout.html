@@ -1,0 +1,19 @@
+{% extends "account/base_entrance.html" %}
+
+{% block title %}Sign out - {{ SITE_NAME }}{% endblock %}
+
+{% block entrance %}
+  <header>
+    <h1 class="auth__title">Sign out?</h1>
+    <p class="auth__sub">Your list and orders will be here when you come back.</p>
+  </header>
+
+  <form method="post" action="{% url 'account_logout' %}" class="stack">
+    {% csrf_token %}
+    {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+    {% endif %}
+    <button class="btn btn--primary btn--block" type="submit">Sign out</button>
+    <a class="btn btn--quiet btn--block" href="{% url 'streaming:home' %}">Stay signed in</a>
+  </form>
+{% endblock %}

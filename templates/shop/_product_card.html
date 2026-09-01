@@ -1,0 +1,46 @@
+{% load ui %}
+<article class="product-card reveal">
+  <a class="product-card__media" href="{{ product.get_absolute_url }}" aria-label="{{ product.name }}">
+    {% if product.image_url %}
+      <img src="{{ product.image_url }}" alt="" loading="lazy" decoding="async">
+    {% endif %}
+    {% if not product.in_stock %}
+      <span class="product-card__flag badge badge--danger">Out of stock</span>
+    {% elif product.stock <= 3 %}
+      <span class="product-card__flag badge badge--warning">Only {{ product.stock }} left</span>
+    {% endif %}
+  </a>
+
+  <div class="product-card__body">
+    <div>
+      <h3 class="product-card__name"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
+      {% if product.related_anime %}
+        <p class="text-muted" style="font-size: var(--step--1)">{{ product.related_anime.name }}</p>
+      {% elif product.collection %}
+        <p class="text-muted" style="font-size: var(--step--1)">{{ product.collection }}</p>
+      {% endif %}
+    </div>
+
+    <div class="product-card__foot">
+      <span class="product-card__price">{{ product.price|money }}</span>
+      {% if product.in_stock %}
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'shop:cart-update' product.slug %}" data-cart-form>
+            {% csrf_token %}
+            <input type="hidden" name="op" value="add">
+            <input type="hidden" name="quantity" value="1">
+            <button class="btn btn--ghost btn--sm" type="submit">
+              <i class="ph ph-shopping-cart-simple" aria-hidden="true"></i> Add
+            </button>
+          </form>
+        {% else %}
+          <a class="btn btn--ghost btn--sm" href="{% url 'account_login' %}?next={{ request.path|urlencode }}">
+            <i class="ph ph-shopping-cart-simple" aria-hidden="true"></i> Add
+          </a>
+        {% endif %}
+      {% else %}
+        <span class="btn btn--ghost btn--sm" aria-disabled="true">Sold out</span>
+      {% endif %}
+    </div>
+  </div>
+</article>

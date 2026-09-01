@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% comment %}
+  Shared shell for every allauth page: split screen, artwork left, form right.
+  The previous build had six unrelated auth pages across three Bootstrap
+  versions, plus one template ('base/login-register.html') that two views
+  rendered and that did not exist at all.
+{% endcomment %}
+
+{% block body %}
+  <div class="auth">
+    <aside class="auth__art">
+      <img src="{% static 'img/auth-art.svg' %}" alt="">
+      <div class="auth__art-copy">
+        <h2>{% block art_heading %}Everything you watch, in one account.{% endblock %}</h2>
+        <p>{% block art_body %}Your list, your ratings, your event tickets and your orders follow you everywhere.{% endblock %}</p>
+      </div>
+    </aside>
+
+    <div class="auth__form">
+      <div class="auth__card stack-lg">
+        {% block entrance %}{% endblock %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

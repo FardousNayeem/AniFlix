@@ -1,0 +1,49 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Stream anime, book fan events and grab official merch in one place.{% endblock %}">
+  <meta name="theme-color" content="#070b14">
+
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'vendor/phosphor/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+  <link rel="stylesheet" href="{% static 'css/pages.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  {% include "partials/nav.html" %}
+
+  <main id="main">
+    {% block body %}{% endblock %}
+  </main>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="Back to top">
+    <i class="ph ph-arrow-up" aria-hidden="true"></i>
+  </button>
+
+  {% include "partials/footer.html" %}
+
+  {# Django messages are handed to the toast layer rather than printed inline. #}
+  {% if messages %}
+    {% for message in messages %}
+      <div hidden data-message="{{ message }}" data-level="{{ message.tags|cut:'toast--'|default:'info' }}"></div>
+    {% endfor %}
+  {% endif %}
+
+  <script src="{% static 'js/app.js' %}" defer></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

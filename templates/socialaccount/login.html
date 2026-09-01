@@ -1,0 +1,25 @@
+{% extends "account/base_entrance.html" %}
+{% load i18n %}
+
+{% block title %}Continue with {{ provider.name }} - {{ SITE_NAME }}{% endblock %}
+
+{% block entrance %}
+  <header>
+    <h1 class="auth__title">
+      {% if process == "connect" %}Connect {{ provider.name }}{% else %}Continue with {{ provider.name }}{% endif %}
+    </h1>
+    <p class="auth__sub">
+      {% if process == "connect" %}
+        This links your {{ provider.name }} account to your {{ SITE_NAME }} profile.
+      {% else %}
+        You are about to sign in using your {{ provider.name }} account.
+      {% endif %}
+    </p>
+  </header>
+
+  <form method="post" class="stack">
+    {% csrf_token %}
+    <button class="btn btn--primary btn--block" type="submit">Continue</button>
+    <a class="btn btn--quiet btn--block" href="{% url 'account_login' %}">Use email instead</a>
+  </form>
+{% endblock %}

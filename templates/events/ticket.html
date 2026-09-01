@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Your ticket for {{ event.title }} - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  <div class="page">
+    <div class="shell shell--narrow stack-lg">
+      <header class="text-center stack-sm">
+        <span class="empty__icon" style="margin-inline: auto"><i class="ph ph-check-circle" aria-hidden="true"></i></span>
+        <h1>You are on the list</h1>
+        <p class="text-muted">Show this reference at the door. We have also emailed the organiser.</p>
+      </header>
+
+      <div class="ticket">
+        <div>
+          <p class="text-muted" style="font-size: var(--step--1)">Reference</p>
+          <p class="ticket__code row row--tight">
+            {{ registration.reference }}
+            <button class="btn btn--quiet btn--sm btn--icon" type="button"
+                    data-copy="{{ registration.reference }}" aria-label="Copy ticket reference">
+              <i class="ph ph-copy" aria-hidden="true"></i>
+            </button>
+          </p>
+        </div>
+
+        <dl class="ticket__rows">
+          <div class="ticket__row"><dt>Event</dt><dd>{{ event.title }}</dd></div>
+          <div class="ticket__row"><dt>When</dt><dd>{{ event.starts_at|date:"l j F Y, g:i A" }}</dd></div>
+          <div class="ticket__row"><dt>Where</dt><dd>{{ event.venue.name }}, {{ event.venue.address }}</dd></div>
+          <div class="ticket__row"><dt>Name</dt><dd>{{ user.public_name }}</dd></div>
+          <div class="ticket__row"><dt>Contact</dt><dd>{{ registration.contact_email }}{% if registration.contact_phone %}, {{ registration.contact_phone }}{% endif %}</dd></div>
+        </dl>
+      </div>
+
+      <div class="row" style="justify-content: center">
+        <a class="btn btn--ghost" href="{% url 'events:my-registrations' %}">All my tickets</a>
+        <a class="btn btn--primary" href="{% url 'events:list' %}">Find another event</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

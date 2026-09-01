@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}My activity - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  <div class="page">
+    <div class="shell stack-lg">
+      <header class="measure">
+        <h1>My activity</h1>
+        <p class="text-muted">Your upcoming events and recent orders in one place.</p>
+      </header>
+
+      <div class="split split--half">
+        <section class="panel">
+          <h2 class="panel__title" style="margin-bottom: var(--space-4)">Events</h2>
+          {% if registrations %}
+            <div class="stack-sm">
+              {% for registration in registrations %}
+                <a class="row row--between" href="{{ registration.event.get_absolute_url }}"
+                   style="padding: var(--space-3) 0; border-bottom: 1px solid var(--border)">
+                  <span>
+                    <span style="display:block;font-weight:650">{{ registration.event.title }}</span>
+                    <span class="text-muted" style="font-size: var(--step--1)">{{ registration.event.starts_at|date:"j M Y" }}</span>
+                  </span>
+                  <span class="text-mono text-accent" style="font-size: var(--step--1)">{{ registration.reference }}</span>
+                </a>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted">No events registered yet.</p>
+          {% endif %}
+        </section>
+
+        <section class="panel">
+          <h2 class="panel__title" style="margin-bottom: var(--space-4)">Recent orders</h2>
+          {% if orders %}
+            <div class="stack-sm">
+              {% for order in orders %}
+                <a class="row row--between" href="{{ order.get_absolute_url }}"
+                   style="padding: var(--space-3) 0; border-bottom: 1px solid var(--border)">
+                  <span>
+                    <span class="text-mono" style="display:block;font-weight:650">{{ order.reference }}</span>
+                    <span class="text-muted" style="font-size: var(--step--1)">{{ order.created_at|date:"j M Y" }}</span>
+                  </span>
+                  <span class="line-item__price">{{ order.total|money }}</span>
+                </a>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted">No orders yet.</p>
+          {% endif %}
+        </section>
+      </div>
+    </div>
+  </div>
+{% endblock %}

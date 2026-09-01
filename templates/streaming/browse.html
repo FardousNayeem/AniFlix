@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}Browse - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  {% comment %}
+    Layout family: filter rail + results, deliberately different from the home
+    page's spotlight/rail/grid stack.
+  {% endcomment %}
+  <div class="page">
+    <div class="shell">
+      <div class="split split--rail">
+        <aside>
+          <div class="panel sticky-aside stack">
+            <h2 class="panel__title">Genres</h2>
+            <div class="chip-row">
+              <a class="chip{% if not genre %} is-active{% endif %}" href="{% url 'streaming:browse' %}">All</a>
+              {% for item in genres %}
+                <a class="chip" href="{{ item.get_absolute_url }}">
+                  {{ item.name }} <span class="chip__count">{{ item.anime_count }}</span>
+                </a>
+              {% endfor %}
+            </div>
+          </div>
+        </aside>
+
+        <div class="stack-lg">
+          <header>
+            <h1>Browse the catalogue</h1>
+            <p class="text-muted">{{ result_count }} title{{ result_count|pluralize }} available right now.</p>
+          </header>
+
+          {% include "partials/catalog_toolbar.html" %}
+
+          {% if animes %}
+            <div class="grid-posters">
+              {% for anime in animes %}
+                {% include "partials/poster_card.html" with anime=anime %}
+              {% endfor %}
+            </div>
+            {% include "partials/pagination.html" %}
+          {% else %}
+            {% include "partials/empty_state.html" with icon="ph-film-slate" title="No titles matched" body="Try clearing the search or picking a different genre." action_url="/browse/" action_label="Clear filters" %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

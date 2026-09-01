@@ -1,0 +1,7 @@
+{# Reusable empty state. Pass `icon`, `title`, `body` and optionally `action_url`/`action_label`. #}
+<div class="empty">
+  <span class="empty__icon"><i class="ph {{ icon|default:'ph-list-magnifying-glass' }}" aria-hidden="true"></i></span>
+  <p class="empty__title">{{ title }}</p>
+  {% if body %}<p class="empty__body">{{ body }}</p>{% endif %}
+  {% if action_url %}<a class="btn btn--primary" href="{{ action_url }}">{{ action_label|default:"Browse the catalogue" }}</a>{% endif %}
+</div>

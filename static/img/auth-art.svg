@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#1a2440"/>
+      <stop offset="0.55" stop-color="#0d1424"/>
+      <stop offset="1" stop-color="#04070e"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0.35" stop-color="#d6d012" stop-opacity="0.55"/>
+      <stop offset="0.7" stop-color="#d6d012" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#d6d012" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a3category"/>
+    </linearGradient>
+    <linearGradient id="ridgeFar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b3category"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="1000" fill="url(#sky)"/>
+
+  <!-- Moon and halo -->
+  <circle cx="545" cy="255" r="215" fill="url(#halo)"/>
+  <circle cx="545" cy="255" r="82" fill="#ece53a"/>
+  <circle cx="512" cy="228" r="14" fill="#d6d012" opacity="0.35"/>
+  <circle cx="576" cy="286" r="9" fill="#d6d012" opacity="0.3"/>
+  <circle cx="560" cy="212" r="6" fill="#d6d012" opacity="0.28"/>
+
+  <!-- Stars -->
+  <g fill="#e9edf6">
+    <circle cx="120" cy="140" r="2.1" opacity="0.9"/><circle cx="243" cy="88" r="1.4" opacity="0.6"/>
+    <circle cx="330" cy="203" r="1.8" opacity="0.75"/><circle cx="88" cy="332" r="1.5" opacity="0.55"/>
+    <circle cx="692" cy="118" r="1.7" opacity="0.8"/><circle cx="432" cy="58" r="1.2" opacity="0.5"/>
+    <circle cx="182" cy="430" r="1.6" opacity="0.65"/><circle cx="742" cy="382" r="1.3" opacity="0.5"/>
+    <circle cx="622" cy="520" r="1.4" opacity="0.45"/><circle cx="298" cy="330" r="1.1" opacity="0.45"/>
+    <circle cx="60" cy="215" r="1.3" opacity="0.5"/><circle cx="392" cy="152" r="1.5" opacity="0.6"/>
+    <circle cx="726" cy="238" r="1.2" opacity="0.45"/><circle cx="212" cy="255" r="1.1" opacity="0.4"/>
+  </g>
+
+  <!-- Ridgelines, back to front -->
+  <path d="M0 690 L155 545 L268 655 L392 488 L528 632 L648 535 L800 682 L800 1000 L0 1000 Z"
+        fill="#212d4c" opacity="0.85"/>
+  <path d="M0 792 L196 672 L348 776 L508 668 L668 788 L800 712 L800 1000 L0 1000 Z"
+        fill="#141d30"/>
+  <path d="M0 888 L142 812 L318 892 L474 820 L640 900 L800 838 L800 1000 L0 1000 Z"
+        fill="#080d18"/>
+
+  <!-- Snowline highlights, so the ridges read as depth rather than flat bands -->
+  <path d="M392 488 L432 536 L410 528 L386 552 L360 528 Z" fill="#e9edf6" opacity="0.16"/>
+  <path d="M155 545 L192 592 L172 584 L150 606 L126 584 Z" fill="#e9edf6" opacity="0.12"/>
+</svg>

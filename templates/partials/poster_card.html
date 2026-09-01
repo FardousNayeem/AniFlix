@@ -1,0 +1,38 @@
+{% load ui %}
+{# Poster tile. `anime` is required; `rank` is optional. #}
+<article class="poster reveal">
+  {% if rank %}<span class="poster__rank" aria-hidden="true">{{ rank }}</span>{% endif %}
+
+  {% if user.is_authenticated %}
+    <button class="poster__save{% if anime.in_watchlist %} is-active{% endif %}"
+            type="button"
+            aria-pressed="{% if anime.in_watchlist %}true{% else %}false{% endif %}"
+            aria-label="{% if anime.in_watchlist %}Remove {{ anime.name }} from My List{% else %}Add {{ anime.name }} to My List{% endif %}"
+            data-title="{{ anime.name }}"
+            data-watchlist-url="{% url 'streaming:anime-watchlist-toggle' anime.slug %}">
+      <i class="ph {% if anime.in_watchlist %}ph-check{% else %}ph-plus{% endif %}" aria-hidden="true"></i>
+    </button>
+  {% endif %}
+
+  <a class="poster__frame" href="{{ anime.get_absolute_url }}" aria-label="{{ anime.name }}">
+    {% if anime.poster_url %}
+      <img class="poster__img" src="{{ anime.poster_url }}" alt="" loading="lazy" decoding="async">
+    {% else %}
+      <span class="poster__img" aria-hidden="true"></span>
+    {% endif %}
+  </a>
+
+  <div class="poster__body">
+    <h3 class="poster__title"><a href="{{ anime.get_absolute_url }}">{{ anime.name }}</a></h3>
+    <p class="poster__meta">
+      <span>{{ anime.release_year }}</span>
+      {% if anime.average_rating %}
+        <span aria-hidden="true">&middot;</span>
+        <span class="text-accent"><i class="ph ph-star-fill" aria-hidden="true"></i> {{ anime.average_rating|floatformat:1 }}</span>
+      {% elif anime.episode_count %}
+        <span aria-hidden="true">&middot;</span>
+        <span>{{ anime.episode_count }} ep{{ anime.episode_count|pluralize }}</span>
+      {% endif %}
+    </p>
+  </div>
+</article>

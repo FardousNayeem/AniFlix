@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Anime events - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  {% comment %}
+    Layout family: featured split, then a card grid, then a compact past list.
+    Three different shapes so the page does not read as one repeated row.
+  {% endcomment %}
+  <div class="page">
+    <div class="shell stack-lg">
+
+      {% if upcoming %}
+        {% with headline=upcoming.0 %}
+          <section class="event-hero">
+            {% if headline.cover_url %}<img src="{{ headline.cover_url }}" alt="" fetchpriority="high">{% endif %}
+            <div class="event-hero__body">
+              <span class="badge badge--accent">Next up</span>
+              <h1 style="margin-top: var(--space-3); max-width: 18ch">{{ headline.title }}</h1>
+              <p class="text-soft" style="max-width: 46ch; margin-top: var(--space-3)">
+                {{ headline.summary|default:headline.description|truncatewords:22 }}
+              </p>
+              <p class="row row--tight text-muted" style="margin-top: var(--space-4); font-size: var(--step--1)">
+                <span><i class="ph ph-calendar-blank" aria-hidden="true"></i> {{ headline.starts_at|date:"l j F, g:i A" }}</span>
+                <span><i class="ph ph-map-pin" aria-hidden="true"></i> {{ headline.venue.name }}</span>
+              </p>
+              <div class="row" style="margin-top: var(--space-5)">
+                <a class="btn btn--primary btn--lg" href="{{ headline.get_absolute_url }}">
+                  <i class="ph ph-ticket" aria-hidden="true"></i> View details
+                </a>
+              </div>
+            </div>
+          </section>
+        {% endwith %}
+      {% else %}
+        <header class="measure">
+          <h1>Anime events</h1>
+          <p class="text-muted">Screenings, meetups and cosplay nights run by the community.</p>
+        </header>
+      {% endif %}
+
+      <section class="section">
+        <div class="section__head">
+          <h2 class="section__title">Upcoming</h2>
+          {% if upcoming %}<span class="text-muted text-mono">{{ upcoming|length }}</span>{% endif %}
+        </div>
+
+        {% if upcoming|length > 1 %}
+          <div class="grid-events">
+            {% for event in upcoming %}
+              {% if not forloop.first %}
+                {% include "events/_event_card.html" with event=event %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% elif not upcoming %}
+          {% include "partials/empty_state.html" with icon="ph-calendar-x" title="No events scheduled" body="Nothing is on the calendar right now. Check back soon." action_url="/" action_label="Back to streaming" %}
+        {% else %}
+          <p class="text-muted">That is the only event on the calendar right now.</p>
+        {% endif %}
+      </section>
+
+      {% if past %}
+        <section class="section">
+          <div class="section__head">
+            <h2 class="section__title">Recently held</h2>
+          </div>
+          <div class="panel panel--flush">
+            {% for event in past %}
+              <a class="row row--between" href="{{ event.get_absolute_url }}"
+                 style="padding: var(--space-4) var(--space-5); {% if not forloop.last %}border-bottom: 1px solid var(--border);{% endif %}">
+                <span>
+                  <span style="display:block;font-weight:650">{{ event.title }}</span>
+                  <span class="text-muted" style="font-size: var(--step--1)">{{ event.venue.name }}</span>
+                </span>
+                <span class="text-muted text-mono" style="font-size: var(--step--1)">{{ event.starts_at|date:"j M Y" }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+    </div>
+  </div>
+{% endblock %}

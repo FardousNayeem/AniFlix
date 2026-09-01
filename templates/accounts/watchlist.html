@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}My List - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  <div class="page">
+    <div class="shell stack-lg">
+      <header class="measure">
+        <h1>My List</h1>
+        <p class="text-muted">Titles you saved, newest first. Tap the check to remove one.</p>
+      </header>
+
+      {% if animes %}
+        <div class="grid-posters">
+          {% for anime in animes %}
+            {% include "partials/poster_card.html" with anime=anime %}
+          {% endfor %}
+        </div>
+      {% else %}
+        {% include "partials/empty_state.html" with icon="ph-bookmark-simple" title="Nothing saved yet" body="Hit the plus on any poster and it lands here." action_url="/browse/" action_label="Find something to watch" %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

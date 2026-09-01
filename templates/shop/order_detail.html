@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}Order {{ order.reference }} - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  {# Layout family: document/receipt. #}
+  <div class="page">
+    <div class="shell shell--narrow stack-lg">
+      <nav aria-label="Breadcrumb" class="row row--tight text-muted" style="font-size: var(--step--1)">
+        <a href="{% url 'shop:order-list' %}">My orders</a>
+        <i class="ph ph-caret-right" aria-hidden="true"></i>
+        <span>{{ order.reference }}</span>
+      </nav>
+
+      {% if order.status == 'paid' %}
+        <div class="panel row" style="border-color: rgba(74,222,128,.3); background: var(--positive-dim)">
+          <span class="empty__icon" style="width:2.5rem;height:2.5rem;font-size:1.2rem;color:var(--positive);background:transparent">
+            <i class="ph ph-check-circle" aria-hidden="true"></i>
+          </span>
+          <span>
+            <strong style="display:block">Payment received</strong>
+            <span class="text-soft" style="font-size: var(--step--1)">Paid {{ order.paid_at|date:"j F Y, g:i A" }}. We are packing it now.</span>
+          </span>
+        </div>
+      {% elif order.status == 'pending' %}
+        <div class="panel row row--between" style="border-color: rgba(251,191,36,.3); background: var(--warning-dim)">
+          <span>
+            <strong style="display:block">Awaiting payment</strong>
+            <span class="text-soft" style="font-size: var(--step--1)">This order is reserved but not confirmed until payment clears.</span>
+          </span>
+          <a class="btn btn--primary btn--sm" href="{% url 'shop:payment-start' order.reference %}">Pay now</a>
+        </div>
+      {% elif order.status == 'failed' %}
+        <div class="panel row row--between" style="border-color: rgba(248,113,113,.3); background: var(--danger-dim)">
+          <span>
+            <strong style="display:block">Payment did not go through</strong>
+            <span class="text-soft" style="font-size: var(--step--1)">Nothing was charged. You can try again.</span>
+          </span>
+          <a class="btn btn--primary btn--sm" href="{% url 'shop:payment-start' order.reference %}">Try again</a>
+        </div>
+      {% endif %}
+
+      <article class="receipt">
+        <header class="receipt__head">
+          <div>
+            <p class="text-muted" style="font-size: var(--step--1)">Order reference</p>
+            <h1 class="row row--tight text-mono" style="font-size: var(--step-2); letter-spacing: .08em">
+              {{ order.reference }}
+              <button class="btn btn--quiet btn--sm btn--icon" type="button"
+                      data-copy="{{ order.reference }}" aria-label="Copy order reference">
+                <i class="ph ph-copy" aria-hidden="true"></i>
+              </button>
+            </h1>
+          </div>
+          <div class="text-center">
+            <p class="text-muted" style="font-size: var(--step--1)">Total paid</p>
+            <p class="price-tag" style="font-size: var(--step-2)">{{ order.total|money }}</p>
+          </div>
+        </header>
+
+        <dl class="receipt__facts">
+          <div class="receipt__fact">
+            <dt>Placed</dt>
+            <dd>{{ order.created_at|date:"j F Y, g:i A" }}</dd>
+          </div>
+          <div class="receipt__fact">
+            <dt>Status</dt>
+            <dd>{{ order.get_status_display }}</dd>
+          </div>
+          {% if order.transaction_id %}
+            <div class="receipt__fact">
+              <dt>Transaction</dt>
+              <dd class="text-mono" style="font-size: var(--step--1)">{{ order.transaction_id }}</dd>
+            </div>
+          {% endif %}
+          {% if order.validation_id %}
+            <div class="receipt__fact">
+              <dt>Validation</dt>
+              <dd class="text-mono" style="font-size: var(--step--1)">{{ order.validation_id }}</dd>
+            </div>
+          {% endif %}
+        </dl>
+
+        <section>
+          <h2 class="panel__title" style="margin-bottom: var(--space-3)">Delivering to</h2>
+          <p class="text-soft">
+            {{ order.ship_to_name }}<br>
+            {{ order.ship_to_address }}<br>
+            {{ order.ship_to_city }}{% if order.ship_to_postcode %} {{ order.ship_to_postcode }}{% endif %}<br>
+            {{ order.ship_to_phone }}
+          </p>
+        </section>
+
+        <section style="margin-top: var(--space-6)">
+          <h2 class="panel__title" style="margin-bottom: var(--space-3)">Items</h2>
+          <div class="line-items">
+            {% for item in order.items.all %}
+              <div class="line-item">
+                {% if item.product %}
+                  {% if item.product.image_url %}
+                    <img class="line-item__thumb" src="{{ item.product.image_url }}" alt="" loading="lazy">
+                  {% else %}
+                    <span class="line-item__thumb"></span>
+                  {% endif %}
+                {% else %}
+                  <span class="line-item__thumb"></span>
+                {% endif %}
+                <div class="line-item__body">
+                  <span class="line-item__name">{{ item.product_name }}</span>
+                  <p class="text-muted" style="font-size: var(--step--1)">
+                    {{ item.quantity }} x {{ item.unit_price|money }}
+                  </p>
+                </div>
+                <span class="line-item__price">{{ item.line_total|money }}</span>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="totals" style="margin-top: var(--space-5)">
+            <div class="totals__row totals__row--grand">
+              <span>Total</span>
+              <span class="totals__value">{{ order.total|money }}</span>
+            </div>
+          </div>
+        </section>
+      </article>
+
+      <div class="row" style="justify-content: center">
+        <button class="btn btn--ghost" type="button" onclick="window.print()">
+          <i class="ph ph-printer" aria-hidden="true"></i> Print receipt
+        </button>
+        <a class="btn btn--primary" href="{% url 'shop:product-list' %}">Keep shopping</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

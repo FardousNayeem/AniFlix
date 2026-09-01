@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}Checkout - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  {# Layout family: form beside an order summary. #}
+  <div class="page">
+    <div class="shell stack-lg">
+      <header>
+        <h1>Checkout</h1>
+        <p class="text-muted">Confirm where this is going, then pay securely.</p>
+      </header>
+
+      <div class="split split--detail">
+        <form method="post" class="panel stack">
+          {% csrf_token %}
+          <h2 class="panel__title">Delivery details</h2>
+          {% include "partials/form_errors.html" %}
+
+          <div class="form-grid form-grid--two">
+            {% for field in form %}
+              <div class="{% if field.name == 'address' or field.name == 'save_to_profile' %}form-grid__full{% endif %}">
+                {% include "partials/form_field.html" with field=field %}
+              </div>
+            {% endfor %}
+          </div>
+
+          <button class="btn btn--primary btn--lg btn--block" type="submit">
+            <i class="ph ph-lock-simple" aria-hidden="true"></i> Continue to payment
+          </button>
+          <p class="text-muted text-center" style="font-size: var(--step--1)">
+            You will be sent to the payment gateway. Your order is only confirmed once payment clears.
+          </p>
+        </form>
+
+        <aside>
+          <div class="panel sticky-aside stack">
+            <h2 class="panel__title">Order summary</h2>
+            <div class="line-items">
+              {% for item in cart_obj.items.all %}
+                <div class="line-item">
+                  {% if item.product.image_url %}
+                    <img class="line-item__thumb" src="{{ item.product.image_url }}" alt="" loading="lazy">
+                  {% else %}
+                    <span class="line-item__thumb"></span>
+                  {% endif %}
+                  <div class="line-item__body">
+                    <span class="line-item__name">{{ item.product.name }}</span>
+                    <p class="text-muted" style="font-size: var(--step--1)">Qty {{ item.quantity }}</p>
+                  </div>
+                  <span class="line-item__price">{{ item.line_total|money }}</span>
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="totals">
+              <div class="totals__row">
+                <span>Items</span>
+                <span class="totals__value">{{ cart_obj.items_count }}</span>
+              </div>
+              <div class="totals__row totals__row--grand">
+                <span>Total</span>
+                <span class="totals__value">{{ cart_obj.subtotal|money }}</span>
+              </div>
+            </div>
+
+            <a class="btn btn--quiet btn--sm btn--block" href="{% url 'shop:cart' %}">Edit cart</a>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+{% endblock %}

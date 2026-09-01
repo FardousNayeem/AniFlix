@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}Merch store - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  {# Layout family: banner header + toolbar + product grid. #}
+  <div class="page">
+    <div class="shell stack-lg">
+      <header class="panel" style="background: radial-gradient(90% 160% at 100% 0%, rgba(214,208,18,.1), transparent 55%), var(--surface)">
+        <h1>Official merch</h1>
+        <p class="text-muted measure" style="margin-top: var(--space-2)">
+          Shirts, hoodies and bags for the titles you actually watch. Shipped across Bangladesh.
+        </p>
+      </header>
+
+      {% include "partials/catalog_toolbar.html" with search_placeholder="Search merch by name or title" %}
+
+      {% if products %}
+        <div class="grid-products">
+          {% for product in products %}
+            {% include "shop/_product_card.html" with product=product %}
+          {% endfor %}
+        </div>
+        {% include "partials/pagination.html" %}
+      {% else %}
+        {% include "partials/empty_state.html" with icon="ph-t-shirt" title="Nothing matched" body="Try a different search, or browse everything in the store." action_url="/shop/" action_label="Show all merch" %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

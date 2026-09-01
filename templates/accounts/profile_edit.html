@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}Edit profile - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  <div class="page">
+    <div class="shell shell--narrow stack-lg">
+      <nav aria-label="Breadcrumb" class="row row--tight text-muted" style="font-size: var(--step--1)">
+        <a href="{% url 'accounts:profile' %}">Profile</a>
+        <i class="ph ph-caret-right" aria-hidden="true"></i>
+        <span>Edit</span>
+      </nav>
+
+      <header>
+        <h1>Edit profile</h1>
+        <p class="text-muted">Your email and password are managed in account settings.</p>
+      </header>
+
+      <form method="post" enctype="multipart/form-data" class="panel stack">
+        {% csrf_token %}
+        {% include "partials/form_errors.html" %}
+
+        <div class="row" style="gap: var(--space-4)">
+          <span class="avatar avatar--lg">
+            {% if user.avatar_url %}
+              <img src="{{ user.avatar_url }}" alt="">
+            {% else %}{{ user.public_name|initials }}{% endif %}
+          </span>
+          <div class="spacer">
+            {% include "partials/form_field.html" with field=form.avatar %}
+          </div>
+        </div>
+
+        <div class="form-grid form-grid--two">
+          <div class="form-grid__full">{% include "partials/form_field.html" with field=form.display_name %}</div>
+          <div class="form-grid__full">{% include "partials/form_field.html" with field=form.bio %}</div>
+          {% include "partials/form_field.html" with field=form.gender %}
+          {% include "partials/form_field.html" with field=form.phone %}
+          <div class="form-grid__full">{% include "partials/form_field.html" with field=form.address %}</div>
+          {% include "partials/form_field.html" with field=form.city %}
+          {% include "partials/form_field.html" with field=form.postcode %}
+          <div class="form-grid__full">{% include "partials/form_field.html" with field=form.newsletter_opt_in %}</div>
+        </div>
+
+        <div class="row row--between">
+          <a class="btn btn--quiet" href="{% url 'accounts:profile' %}">Cancel</a>
+          <button class="btn btn--primary" type="submit">
+            <i class="ph ph-floppy-disk" aria-hidden="true"></i> Save changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

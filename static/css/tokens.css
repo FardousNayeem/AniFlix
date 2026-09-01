@@ -1,0 +1,120 @@
+/* =========================================================================
+   ANIFLIX design tokens
+   -------------------------------------------------------------------------
+   One palette, one radius scale, one type scale. Every component below and
+   in components.css reads from here; nothing hard-codes a colour.
+
+   Theme: committed dark. A streaming product is watched in a dark room and
+   the brand was already dark navy, so there is no light variant to drift
+   out of sync. Every surface paints its own background explicitly.
+   ========================================================================= */
+
+:root {
+  color-scheme: dark;
+
+  /* --- Surfaces ------------------------------------------------------- */
+  --bg: #070b14;
+  --bg-deep: #04070e;
+  --surface: #0d1424;
+  --surface-2: #131c30;
+  --surface-3: #1a2440;
+  --overlay: rgba(4, 7, 14, 0.78);
+
+  /* --- Lines ---------------------------------------------------------- */
+  --border: rgba(233, 237, 246, 0.09);
+  --border-strong: rgba(233, 237, 246, 0.16);
+  --border-accent: rgba(214, 208, 18, 0.42);
+
+  /* --- Text ----------------------------------------------------------- */
+  --text: #e9edf6;
+  --text-soft: #aab5cb;
+  --text-muted: #7c88a2;
+  --text-on-accent: #14150a;
+
+  /* --- Accent (brand yellow, carried over from the original build) ---- */
+  --accent: #d6d012;
+  --accent-bright: #ece53a;
+  --accent-dim: rgba(214, 208, 18, 0.14);
+  --accent-glow: rgba(214, 208, 18, 0.22);
+
+  /* --- Status --------------------------------------------------------- */
+  --positive: #4ade80;
+  --positive-dim: rgba(74, 222, 128, 0.14);
+  --warning: #fbbf24;
+  --warning-dim: rgba(251, 191, 36, 0.14);
+  --danger: #f87171;
+  --danger-dim: rgba(248, 113, 113, 0.14);
+  --info: #60a5fa;
+  --info-dim: rgba(96, 165, 250, 0.14);
+
+  /* --- Radius: surfaces 16, controls 10, chips and avatars full ------- */
+  --r-surface: 16px;
+  --r-control: 10px;
+  --r-small: 6px;
+  --r-full: 999px;
+
+  /* --- Elevation: tinted to the background, never pure black ---------- */
+  --shadow-sm: 0 2px 8px rgba(3, 6, 14, 0.5);
+  --shadow-md: 0 12px 28px rgba(3, 6, 14, 0.55);
+  --shadow-lg: 0 28px 64px rgba(3, 6, 14, 0.62);
+
+  /* --- Type ----------------------------------------------------------- */
+  --font-display: "Outfit", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --step--1: clamp(0.78rem, 0.76rem + 0.1vw, 0.84rem);
+  --step-0: clamp(0.94rem, 0.91rem + 0.14vw, 1rem);
+  --step-1: clamp(1.12rem, 1.05rem + 0.32vw, 1.3rem);
+  --step-2: clamp(1.36rem, 1.22rem + 0.66vw, 1.75rem);
+  --step-3: clamp(1.68rem, 1.42rem + 1.2vw, 2.4rem);
+  --step-4: clamp(2.05rem, 1.6rem + 2.1vw, 3.4rem);
+  --step-5: clamp(2.5rem, 1.75rem + 3.4vw, 4.5rem);
+
+  /* --- Spacing -------------------------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  /* --- Layout --------------------------------------------------------- */
+  --shell: 1280px;
+  --shell-narrow: 880px;
+  --nav-height: 72px;
+
+  /* --- Motion --------------------------------------------------------- */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --fast: 140ms;
+  --normal: 260ms;
+  --slow: 480ms;
+
+  /* --- Layers: documented, so nothing invents its own z-index --------- */
+  --z-base: 0;
+  --z-sticky: 20;
+  --z-nav: 40;
+  --z-drawer: 50;
+  --z-toast: 60;
+}
+
+/* Motion is decorative here; every animation below collapses under this. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --fast: 0ms;
+    --normal: 0ms;
+    --slow: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

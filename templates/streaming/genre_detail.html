@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}{{ genre.name }} anime - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  {# Layout family: header band + grid. #}
+  <div class="page">
+    <div class="shell stack-lg">
+      <nav aria-label="Breadcrumb" class="row row--tight text-muted" style="font-size: var(--step--1)">
+        <a href="{% url 'streaming:genre-list' %}">Genres</a>
+        <i class="ph ph-caret-right" aria-hidden="true"></i>
+        <span>{{ genre.name }}</span>
+      </nav>
+
+      <header class="panel">
+        <h1>{{ genre.name }}</h1>
+        <p class="text-muted">{% if genre.description %}{{ genre.description }}{% else %}{{ result_count }} title{{ result_count|pluralize }} in this genre.{% endif %}</p>
+      </header>
+
+      {% include "partials/catalog_toolbar.html" %}
+
+      {% if animes %}
+        <div class="grid-posters">
+          {% for anime in animes %}
+            {% include "partials/poster_card.html" with anime=anime %}
+          {% endfor %}
+        </div>
+        {% include "partials/pagination.html" %}
+      {% else %}
+        {% include "partials/empty_state.html" with icon="ph-tag" title="Nothing here yet" body="No titles are tagged with this genre." action_url="/browse/" action_label="Browse everything" %}
+      {% endif %}
+
+      <section class="section">
+        <h2 class="section__title">Other genres</h2>
+        <div class="chip-row" style="margin-top: var(--space-4)">
+          {% for item in genres %}
+            <a class="chip{% if item.id == genre.id %} is-active{% endif %}" href="{{ item.get_absolute_url }}">
+              {{ item.name }} <span class="chip__count">{{ item.anime_count }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

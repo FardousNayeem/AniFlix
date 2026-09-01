@@ -1,0 +1,19 @@
+{% extends "account/base_entrance.html" %}
+
+{% block title %}Finish signing up - {{ SITE_NAME }}{% endblock %}
+
+{% block entrance %}
+  <header>
+    <h1 class="auth__title">One last step</h1>
+    <p class="auth__sub">Confirm these details and your account is ready.</p>
+  </header>
+
+  <form method="post" action="{% url 'socialaccount_signup' %}" class="stack">
+    {% csrf_token %}
+    {% include "partials/form_errors.html" %}
+    {% for field in form %}
+      {% include "partials/form_field.html" with field=field %}
+    {% endfor %}
+    <button class="btn btn--primary btn--block" type="submit">Create account</button>
+  </form>
+{% endblock %}

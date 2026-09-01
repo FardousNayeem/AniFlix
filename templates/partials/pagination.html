@@ -1,0 +1,20 @@
+{# Shared pager. Expects `page_obj` and optionally `extra_query`. #}
+{% if page_obj.paginator.num_pages > 1 %}
+  <nav class="pagination" aria-label="Pagination">
+    {% if page_obj.has_previous %}
+      <a class="btn btn--ghost btn--sm" href="?page=1{{ extra_query }}" aria-label="First page"><i class="ph ph-caret-double-left" aria-hidden="true"></i></a>
+      <a class="btn btn--ghost btn--sm" href="?page={{ page_obj.previous_page_number }}{{ extra_query }}"><i class="ph ph-caret-left" aria-hidden="true"></i> Previous</a>
+    {% else %}
+      <span class="btn btn--ghost btn--sm" aria-disabled="true"><i class="ph ph-caret-left" aria-hidden="true"></i> Previous</span>
+    {% endif %}
+
+    <span class="pagination__status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+    {% if page_obj.has_next %}
+      <a class="btn btn--ghost btn--sm" href="?page={{ page_obj.next_page_number }}{{ extra_query }}">Next <i class="ph ph-caret-right" aria-hidden="true"></i></a>
+      <a class="btn btn--ghost btn--sm" href="?page={{ page_obj.paginator.num_pages }}{{ extra_query }}" aria-label="Last page"><i class="ph ph-caret-double-right" aria-hidden="true"></i></a>
+    {% else %}
+      <span class="btn btn--ghost btn--sm" aria-disabled="true">Next <i class="ph ph-caret-right" aria-hidden="true"></i></span>
+    {% endif %}
+  </nav>
+{% endif %}

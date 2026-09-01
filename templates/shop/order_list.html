@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}My orders - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  {# Layout family: stacked order cards with a status filter. #}
+  <div class="page">
+    <div class="shell stack-lg">
+      <header class="row row--between">
+        <div>
+          <h1>My orders</h1>
+          <p class="text-muted">Every order placed on this account.</p>
+        </div>
+        <form method="get" class="toolbar__group">
+          <label class="toolbar__label" for="id_status">Show</label>
+          {{ filter_form.status }}
+        </form>
+      </header>
+
+      {% if orders %}
+        <div class="stack">
+          {% for order in orders %}
+            <article class="order-card reveal">
+              <div class="order-card__head">
+                <div>
+                  <p class="order-card__ref">{{ order.reference }}</p>
+                  <p class="text-muted" style="font-size: var(--step--1)">
+                    {{ order.created_at|date:"j F Y, g:i A" }} &middot; {{ order.items_count }} item{{ order.items_count|pluralize }}
+                  </p>
+                </div>
+                <div class="row row--tight">
+                  {% if order.status == 'paid' %}
+                    <span class="badge badge--positive"><i class="ph ph-check-circle" aria-hidden="true"></i> Paid</span>
+                  {% elif order.status == 'pending' %}
+                    <span class="badge badge--warning"><i class="ph ph-clock" aria-hidden="true"></i> Awaiting payment</span>
+                  {% elif order.status == 'failed' %}
+                    <span class="badge badge--danger">Payment failed</span>
+                  {% else %}
+                    <span class="badge">Cancelled</span>
+                  {% endif %}
+                  <span class="line-item__price">{{ order.total|money }}</span>
+                </div>
+              </div>
+
+              <div class="order-card__body">
+                <div class="row row--between">
+                  <div class="row row--tight">
+                    {% for item in order.items.all|slice:":4" %}
+                      <span class="badge">{{ item.quantity }} x {{ item.product_name }}</span>
+                    {% endfor %}
+                    {% if order.items.count > 4 %}
+                      <span class="badge">+{{ order.items.count|add:"-4" }} more</span>
+                    {% endif %}
+                  </div>
+
+                  <div class="row row--tight">
+                    <a class="btn btn--ghost btn--sm" href="{{ order.get_absolute_url }}">View receipt</a>
+                    {% if order.status == 'pending' %}
+                      <a class="btn btn--primary btn--sm" href="{% url 'shop:payment-start' order.reference %}">Pay now</a>
+                      <form method="post" action="{% url 'shop:order-cancel' order.reference %}"
+                            data-confirm="Cancel order {{ order.reference }}?">
+                        {% csrf_token %}
+                        <button class="btn btn--quiet btn--danger btn--sm" type="submit">Cancel</button>
+                      </form>
+                    {% elif order.status == 'failed' %}
+                      <a class="btn btn--primary btn--sm" href="{% url 'shop:payment-start' order.reference %}">Try payment again</a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        {% include "partials/empty_state.html" with icon="ph-package" title="No orders yet" body="Once you buy something it will show up here with its receipt." action_url="/shop/" action_label="Browse the store" %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% load ui %}
+<header class="nav">
+  <nav class="nav__inner" aria-label="Primary">
+    <a class="nav__brand" href="{% url 'streaming:home' %}">ANI<span>FLIX</span></a>
+
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle navigation">
+      <i class="ph ph-list" aria-hidden="true"></i>
+    </button>
+
+    <ul class="nav__links" id="nav-links" hidden>
+      <li><a class="nav__link" href="{% url 'streaming:browse' %}" {% if nav_section == 'browse' %}aria-current="page"{% endif %}>Browse</a></li>
+      <li><a class="nav__link" href="{% url 'streaming:genre-list' %}" {% if nav_section == 'genres' %}aria-current="page"{% endif %}>Genres</a></li>
+      <li><a class="nav__link" href="{% url 'events:list' %}" {% if nav_section == 'events' %}aria-current="page"{% endif %}>Events</a></li>
+      <li><a class="nav__link" href="{% url 'shop:product-list' %}" {% if nav_section == 'shop' %}aria-current="page"{% endif %}>Shop</a></li>
+      {% if user.is_authenticated %}
+        <li><a class="nav__link" href="{% url 'accounts:watchlist' %}" {% if nav_section == 'watchlist' %}aria-current="page"{% endif %}>My List</a></li>
+      {% else %}
+        {# Phone widths cannot fit both auth buttons in the bar; this is where the second one lives. #}
+        <li class="nav__link-signin"><a class="nav__link" href="{% url 'account_login' %}">Sign in</a></li>
+      {% endif %}
+    </ul>
+
+    <div class="nav__actions">
+      <a class="nav__cart" href="{% url 'shop:cart' %}" aria-label="Cart">
+        <i class="ph ph-shopping-cart-simple" aria-hidden="true"></i>
+        <span class="nav__cart-count" data-cart-count {% if not cart.count %}hidden{% endif %}>{{ cart.count }}</span>
+      </a>
+
+      {% if user.is_authenticated %}
+        <div class="menu">
+          <button class="menu__trigger" type="button" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
+            <span class="avatar">
+              {% if user.avatar_url %}
+                <img src="{{ user.avatar_url }}" alt="">
+              {% else %}{{ user.public_name|initials }}{% endif %}
+            </span>
+            <i class="ph ph-caret-down menu__caret" aria-hidden="true"></i>
+          </button>
+
+          <div class="menu__panel" hidden>
+            <div class="menu__header">
+              <div class="menu__name">{{ user.public_name }}</div>
+              <div class="menu__email">{{ user.email }}</div>
+            </div>
+            <a class="menu__item" href="{% url 'accounts:profile' %}"><i class="ph ph-user-circle" aria-hidden="true"></i> Profile</a>
+            <a class="menu__item" href="{% url 'accounts:watchlist' %}"><i class="ph ph-bookmark-simple" aria-hidden="true"></i> My List</a>
+            <a class="menu__item" href="{% url 'events:my-registrations' %}"><i class="ph ph-ticket" aria-hidden="true"></i> My Events</a>
+            <a class="menu__item" href="{% url 'shop:order-list' %}"><i class="ph ph-package" aria-hidden="true"></i> My Orders</a>
+            <div class="menu__divider"></div>
+            <form method="post" action="{% url 'account_logout' %}">
+              {% csrf_token %}
+              <button class="menu__item" type="submit"><i class="ph ph-sign-out" aria-hidden="true"></i> Sign out</button>
+            </form>
+          </div>
+        </div>
+      {% else %}
+        <a class="btn btn--quiet btn--sm nav__signin" href="{% url 'account_login' %}">Sign in</a>
+        <a class="btn btn--primary btn--sm" href="{% url 'account_signup' %}">Join free</a>
+      {% endif %}
+    </div>
+  </nav>
+</header>

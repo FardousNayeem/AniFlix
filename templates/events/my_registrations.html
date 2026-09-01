@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}My events - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  <div class="page">
+    <div class="shell stack-lg">
+      <header class="measure">
+        <h1>My events</h1>
+        <p class="text-muted">Everything you are signed up for, soonest first.</p>
+      </header>
+
+      {% if registrations %}
+        <div class="grid-events">
+          {% for registration in registrations %}
+            <article class="event-card reveal">
+              <div class="event-card__media">
+                {% if registration.event.cover_url %}
+                  <img src="{{ registration.event.cover_url }}" alt="" loading="lazy">
+                {% endif %}
+                <span class="event-card__date">
+                  <span class="event-card__day">{{ registration.event.starts_at|date:"j" }}</span>
+                  <span class="event-card__month">{{ registration.event.starts_at|date:"M" }}</span>
+                </span>
+              </div>
+              <div class="event-card__body">
+                <h2 class="event-card__title">
+                  <a href="{{ registration.event.get_absolute_url }}">{{ registration.event.title }}</a>
+                </h2>
+                <p class="event-card__where">
+                  <i class="ph ph-map-pin" aria-hidden="true"></i> {{ registration.event.venue.name }}
+                </p>
+                <p class="text-muted" style="font-size: var(--step--1)">
+                  Reference <span class="text-mono text-accent">{{ registration.reference }}</span>
+                </p>
+                <div class="event-card__foot">
+                  {% if registration.event.has_started %}
+                    <span class="badge">Past</span>
+                  {% else %}
+                    <a class="btn btn--ghost btn--sm" href="{% url 'events:ticket' registration.event.slug %}">Ticket</a>
+                    <form method="post" action="{% url 'events:cancel' registration.event.slug %}"
+                          data-confirm="Cancel your registration for {{ registration.event.title }}?">
+                      {% csrf_token %}
+                      <button class="btn btn--quiet btn--danger btn--sm" type="submit">Cancel</button>
+                    </form>
+                  {% endif %}
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        {% include "partials/empty_state.html" with icon="ph-ticket" title="No tickets yet" body="Register for an event and it will show up here." action_url="/events/" action_label="Browse events" %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

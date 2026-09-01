@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}Your cart - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  {# Layout family: line-item list + sticky summary. #}
+  <div class="page">
+    <div class="shell stack-lg">
+      <header class="row row--between">
+        <div>
+          <h1>Your cart</h1>
+          <p class="text-muted" data-cart-heading>{{ cart_obj.items_count|default:0 }} item{{ cart_obj.items_count|default:0|pluralize }}</p>
+        </div>
+        <a class="btn btn--quiet" href="{% url 'shop:product-list' %}">
+          <i class="ph ph-arrow-left" aria-hidden="true"></i> Keep shopping
+        </a>
+      </header>
+
+      {% if cart_obj and not cart_obj.is_empty %}
+        <div class="split split--sidebar">
+          <div class="panel" data-cart-scope>
+            <div class="line-items">
+              {% for item in cart_obj.items.all %}
+                <div class="line-item" data-cart-line="{{ item.product.slug }}">
+                  <a href="{{ item.product.get_absolute_url }}">
+                    {% if item.product.image_url %}
+                      <img class="line-item__thumb" src="{{ item.product.image_url }}" alt="" loading="lazy">
+                    {% else %}
+                      <span class="line-item__thumb"></span>
+                    {% endif %}
+                  </a>
+
+                  <div class="line-item__body">
+                    <a class="line-item__name" href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a>
+                    <p class="text-muted" style="font-size: var(--step--1)">
+                      {{ item.product.price|money }} each
+                      {% if item.product.size %} &middot; size {{ item.product.get_size_display }}{% endif %}
+                    </p>
+                  </div>
+
+                  <div class="line-item__controls">
+                    <span class="qty">
+                      <form method="post" action="{% url 'shop:cart-update' item.product.slug %}" data-cart-form data-cart-reload="true">
+                        {% csrf_token %}
+                        <input type="hidden" name="op" value="remove">
+                        <button type="submit" aria-label="Remove one {{ item.product.name }}"><i class="ph ph-minus" aria-hidden="true"></i></button>
+                      </form>
+                      <span class="qty__value" data-line-quantity>{{ item.quantity }}</span>
+                      <form method="post" action="{% url 'shop:cart-update' item.product.slug %}" data-cart-form data-cart-reload="true">
+                        {% csrf_token %}
+                        <input type="hidden" name="op" value="add">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" aria-label="Add one {{ item.product.name }}"
+                                {% if item.quantity >= max_quantity or item.quantity >= item.product.stock %}disabled{% endif %}>
+                          <i class="ph ph-plus" aria-hidden="true"></i>
+                        </button>
+                      </form>
+                    </span>
+
+                    <span class="line-item__price" data-line-total>{{ item.line_total|money }}</span>
+
+                    <form method="post" action="{% url 'shop:cart-update' item.product.slug %}" data-cart-form data-cart-reload="true">
+                      {% csrf_token %}
+                      <input type="hidden" name="op" value="delete">
+                      <button class="btn btn--quiet btn--sm btn--danger" type="submit" aria-label="Remove {{ item.product.name }}">
+                        <i class="ph ph-trash" aria-hidden="true"></i>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <aside>
+            <div class="panel sticky-aside stack">
+              <h2 class="panel__title">Summary</h2>
+              <div class="totals">
+                <div class="totals__row">
+                  <span>Items</span>
+                  <span class="totals__value" data-cart-items>{{ cart_obj.items_count }}</span>
+                </div>
+                <div class="totals__row">
+                  <span>Delivery</span>
+                  <span class="totals__value">Calculated at checkout</span>
+                </div>
+                <div class="totals__row totals__row--grand">
+                  <span>Subtotal</span>
+                  <span class="totals__value" data-cart-subtotal>{{ cart_obj.subtotal|money }}</span>
+                </div>
+              </div>
+              <a class="btn btn--primary btn--block btn--lg" href="{% url 'shop:checkout' %}">
+                Checkout <i class="ph ph-arrow-right" aria-hidden="true"></i>
+              </a>
+            </div>
+          </aside>
+        </div>
+      {% else %}
+        {% include "partials/empty_state.html" with icon="ph-shopping-cart-simple" title="Your cart is empty" body="Add some merch and it will show up here." action_url="/shop/" action_label="Browse the store" %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

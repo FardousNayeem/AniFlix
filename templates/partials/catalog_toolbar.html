@@ -1,0 +1,41 @@
+{% load querystring %}
+{% comment %}
+  Search + sort. Sorting preserves the active search term; the old shop dropped
+  it. The search box also fetches live suggestions (see initSearch in app.js)
+  and degrades to a plain GET form without scripting.
+{% endcomment %}
+<form class="toolbar" method="get" role="search" data-search>
+  <div class="search" data-search-box>
+    <label class="visually-hidden" for="catalog-search">Search titles</label>
+    <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+    <input class="input" type="search" id="catalog-search" name="q" value="{{ search }}"
+           placeholder="{{ search_placeholder|default:'Search by title, studio or genre' }}"
+           autocomplete="off"
+           {% if suggest_url %}data-search-input data-suggest-url="{{ suggest_url }}"
+           role="combobox" aria-expanded="false" aria-autocomplete="list"
+           aria-controls="search-suggestions"{% endif %}>
+    <button class="search__clear" type="button" data-search-clear aria-label="Clear search"
+            {% if not search %}hidden{% endif %}>
+      <i class="ph ph-x" aria-hidden="true"></i>
+    </button>
+
+    {% if suggest_url %}
+      <ul class="suggest" id="search-suggestions" role="listbox" aria-label="Suggestions" data-search-results hidden></ul>
+    {% endif %}
+  </div>
+
+  <button class="btn btn--primary btn--sm" type="submit">Search</button>
+
+  <div class="toolbar__group">
+    <label class="toolbar__label" for="sort-select">Sort</label>
+    <select class="select" id="sort-select" name="sort" data-autosubmit="true">
+      {% for value, option in sort_options.items %}
+        <option value="{{ value }}" {% if sort == value %}selected{% endif %}>{{ option.1 }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {% if search %}
+    <a class="btn btn--quiet btn--sm" href="{% url_replace q=None %}">Clear</a>
+  {% endif %}
+</form>

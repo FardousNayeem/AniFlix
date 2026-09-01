@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}{{ anime.name }} episode {{ episode.number }} - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  {# Layout family: player-first with an episode sidebar. #}
+  <div class="page">
+    <div class="shell">
+      <nav aria-label="Breadcrumb" class="row row--tight text-muted" style="font-size: var(--step--1); margin-bottom: var(--space-4)">
+        <a href="{{ anime.get_absolute_url }}">{{ anime.name }}</a>
+        <i class="ph ph-caret-right" aria-hidden="true"></i>
+        <span>Episode {{ episode.number }}</span>
+      </nav>
+
+      <div class="split split--sidebar">
+        <div class="stack-lg">
+          <section>
+            {% with source=episode.source %}
+            <div class="player" data-player>
+              {% if source.is_file %}
+                {% comment %}A direct file plays natively, with real controls.{% endcomment %}
+                <video controls preload="metadata" playsinline
+                       {% if anime.backdrop_url %}poster="{{ anime.backdrop_url }}"{% endif %}>
+                  <source src="{{ source.url }}"{% if source.mime %} type="{{ source.mime }}"{% endif %}>
+                  Your browser cannot play this file.
+                </video>
+
+              {% elif source.is_embed %}
+                {% comment %}
+                  Framed player. Cross-origin framing failures are not
+                  detectable from script, so the frame is never hidden on a
+                  guess: if it is slow, the escape line below simply gets
+                  louder.
+                {% endcomment %}
+                <iframe data-player-frame
+                        src="{{ source.url }}"
+                        title="{{ anime.name }} episode {{ episode.number }}: {{ episode.title }}"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen></iframe>
+
+              {% else %}
+                <div class="player__fallback">
+                  <span class="empty__icon"><i class="ph ph-monitor-play" aria-hidden="true"></i></span>
+                  <p class="empty__title">This episode is not available yet</p>
+                  <p class="empty__body">It will start playing here as soon as a source is attached.</p>
+                </div>
+              {% endif %}
+            </div>
+
+            {% if source.is_playable %}
+              <p class="player__escape" data-player-escape>
+                <span data-escape-lead>Trouble playing it here?</span>
+                <a href="{{ source.link_url }}" target="_blank" rel="noopener noreferrer">
+                  Open on {{ source.provider }} <i class="ph ph-arrow-square-out" aria-hidden="true"></i>
+                </a>
+              </p>
+            {% endif %}
+            {% endwith %}
+
+            <div class="player-bar">
+              <div>
+                <h1 style="font-size: var(--step-2)">{{ episode.number }}. {{ episode.title }}</h1>
+                <p class="text-muted" style="font-size: var(--step--1)">
+                  {% if episode.air_date %}Aired {{ episode.air_date|date:"j F Y" }}{% endif %}
+                  {% if episode.duration_minutes %} &middot; {{ episode.duration_minutes }} min{% endif %}
+                </p>
+              </div>
+              <div class="row row--tight">
+                {% if previous_episode %}
+                  <a class="btn btn--ghost btn--sm" href="{{ previous_episode.get_absolute_url }}" data-episode-prev>
+                    <i class="ph ph-caret-left" aria-hidden="true"></i> Previous
+                  </a>
+                {% endif %}
+                {% if next_episode %}
+                  <a class="btn btn--primary btn--sm" href="{{ next_episode.get_absolute_url }}" data-episode-next>
+                    Next <i class="ph ph-caret-right" aria-hidden="true"></i>
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+
+            {% if episode.synopsis %}
+              <p class="text-soft measure" style="margin-top: var(--space-4)">{{ episode.synopsis }}</p>
+            {% endif %}
+
+            {% if previous_episode or next_episode %}
+              <p class="text-muted" style="margin-top: var(--space-3); font-size: var(--step--1)">
+                Use <span class="kbd">&larr;</span> and <span class="kbd">&rarr;</span> to move between episodes.
+              </p>
+            {% endif %}
+          </section>
+
+          <section class="section" id="comments">
+            <div class="section__head">
+              <h2 class="section__title">Discussion</h2>
+              {% if comments %}<span class="text-muted text-mono">{{ comments|length }}</span>{% endif %}
+            </div>
+
+            {% if user.is_authenticated %}
+              <form method="post" class="panel stack" action="{{ episode.get_absolute_url }}">
+                {% csrf_token %}
+                {% include "partials/form_errors.html" %}
+                {% for field in comment_form %}
+                  {% include "partials/form_field.html" with field=field %}
+                {% endfor %}
+                <div class="row row--between">
+                  <span class="text-muted" style="font-size: var(--step--1)">Be decent. Spoilers get you muted.</span>
+                  <button class="btn btn--primary" type="submit">
+                    <i class="ph ph-paper-plane-tilt" aria-hidden="true"></i> Post comment
+                  </button>
+                </div>
+              </form>
+            {% else %}
+              <div class="panel row row--between">
+                <span class="text-soft">Sign in to join the discussion.</span>
+                <a class="btn btn--primary btn--sm" href="{% url 'account_login' %}?next={{ request.path|urlencode }}">Sign in</a>
+              </div>
+            {% endif %}
+
+            {% if comments %}
+              <div style="margin-top: var(--space-5)">
+                {% for comment in comments %}
+                  <article class="comment">
+                    <span class="avatar">
+                      {% if comment.user.avatar_url %}
+                        <img src="{{ comment.user.avatar_url }}" alt="">
+                      {% else %}{{ comment.user.public_name|initials }}{% endif %}
+                    </span>
+                    <div>
+                      <div class="comment__head">
+                        <span class="comment__author">{{ comment.user.public_name }}</span>
+                        <span class="comment__time">{{ comment.created_at|timesince }} ago</span>
+                      </div>
+                      <p class="comment__body">{{ comment.body }}</p>
+                      {% if user == comment.user or user.is_staff %}
+                        <form class="comment__actions" method="post"
+                              action="{% url 'streaming:comment-delete' comment.id %}"
+                              data-confirm="Delete this comment?">
+                          {% csrf_token %}
+                          <button class="btn btn--quiet btn--sm btn--danger" type="submit">
+                            <i class="ph ph-trash" aria-hidden="true"></i> Delete
+                          </button>
+                        </form>
+                      {% endif %}
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div style="margin-top: var(--space-5)">
+                {% include "partials/empty_state.html" with icon="ph-chats-circle" title="No comments yet" body="Be the first to say something about this episode." %}
+              </div>
+            {% endif %}
+          </section>
+        </div>
+
+        <aside>
+          <div class="panel panel--tight sticky-aside">
+            <h2 class="panel__title" style="padding: var(--space-2) var(--space-2) var(--space-4)">All episodes</h2>
+            <ol class="episode-list" style="max-height: 60vh; overflow-y: auto">
+              {% for item in episodes %}
+                <li>
+                  <a class="episode-row" href="{{ item.get_absolute_url }}"
+                     {% if item.id == episode.id %}aria-current="true"{% endif %}>
+                    <span class="episode-row__number">{{ item.number }}</span>
+                    <span class="episode-row__title">{{ item.title }}</span>
+                  </a>
+                </li>
+              {% endfor %}
+            </ol>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+{% endblock %}

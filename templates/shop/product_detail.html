@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}{{ product.name }} - {{ SITE_NAME }}{% endblock %}
+{% block meta_description %}{{ product.description|truncatewords:26 }}{% endblock %}
+
+{% block body %}
+  {# Layout family: media split. #}
+  <div class="page">
+    <div class="shell stack-lg">
+      <nav aria-label="Breadcrumb" class="row row--tight text-muted" style="font-size: var(--step--1)">
+        <a href="{% url 'shop:product-list' %}">Shop</a>
+        <i class="ph ph-caret-right" aria-hidden="true"></i>
+        <span>{{ product.name }}</span>
+      </nav>
+
+      <div class="split split--half">
+        <div class="product-gallery">
+          {% if product.image_url %}
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" fetchpriority="high">
+          {% endif %}
+        </div>
+
+        <div class="stack">
+          {% if product.related_anime %}
+            <a class="badge badge--accent" href="{{ product.related_anime.get_absolute_url }}">{{ product.related_anime.name }}</a>
+          {% elif product.collection %}
+            <span class="badge badge--accent">{{ product.collection }}</span>
+          {% endif %}
+
+          <h1>{{ product.name }}</h1>
+          <p class="price-tag">{{ product.price|money }}</p>
+
+          {% if product.in_stock %}
+            {% if product.stock <= 5 %}
+              <p class="badge badge--warning">Only {{ product.stock }} left in stock</p>
+            {% else %}
+              <p class="badge badge--positive"><i class="ph ph-check" aria-hidden="true"></i> In stock</p>
+            {% endif %}
+          {% else %}
+            <p class="badge badge--danger">Out of stock</p>
+          {% endif %}
+
+          {% if product.description %}
+            <p class="text-soft measure">{{ product.description }}</p>
+          {% endif %}
+
+          {% if product.size %}
+            <p class="text-muted" style="font-size: var(--step--1)">Size: <strong class="text-soft">{{ product.get_size_display }}</strong></p>
+          {% endif %}
+
+          {% if product.in_stock %}
+            {% if user.is_authenticated %}
+              <form method="post" action="{% url 'shop:cart-update' product.slug %}"
+                    class="row" data-cart-form data-qty>
+                {% csrf_token %}
+                <input type="hidden" name="op" value="add">
+                <span class="qty">
+                  <button type="button" data-qty-step="-1" aria-label="Decrease quantity"><i class="ph ph-minus" aria-hidden="true"></i></button>
+                  <span class="qty__value" data-qty-value>1</span>
+                  <button type="button" data-qty-step="1" aria-label="Increase quantity"><i class="ph ph-plus" aria-hidden="true"></i></button>
+                </span>
+                <input type="hidden" name="quantity" value="1" min="1" max="{{ max_quantity }}">
+                <button class="btn btn--primary btn--lg" type="submit">
+                  <i class="ph ph-shopping-cart-simple" aria-hidden="true"></i> Add to cart
+                </button>
+              </form>
+            {% else %}
+              <a class="btn btn--primary btn--lg" href="{% url 'account_login' %}?next={{ request.path|urlencode }}">
+                Sign in to buy
+              </a>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      {% if related %}
+        <section class="section">
+          <div class="section__head">
+            <h2 class="section__title">You might also like</h2>
+          </div>
+          <div class="grid-products">
+            {% for item in related %}
+              {% include "shop/_product_card.html" with product=item %}
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

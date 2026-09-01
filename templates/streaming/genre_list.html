@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Genres - {{ SITE_NAME }}{% endblock %}
+
+{% block body %}
+  {% comment %}
+    Layout family: tile wall. Each genre is a real page now, not a modal that
+    pre-loaded the whole library.
+  {% endcomment %}
+  <div class="page">
+    <div class="shell stack-lg">
+      <header class="measure">
+        <h1>Browse by genre</h1>
+        <p class="text-muted">Every genre is its own page with its own sorting and search.</p>
+      </header>
+
+      {% if genres %}
+        <div class="genre-tiles">
+          {% for genre in genres %}
+            <a class="genre-tile reveal" href="{{ genre.get_absolute_url }}">
+              <span class="genre-tile__name">{{ genre.name }}</span>
+              <span class="genre-tile__count">{{ genre.anime_count }} title{{ genre.anime_count|pluralize }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        {% include "partials/empty_state.html" with icon="ph-tag" title="No genres yet" body="Genres appear here once titles are tagged in the admin." %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

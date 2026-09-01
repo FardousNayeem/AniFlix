@@ -1,1 +1,30 @@
+# Secrets
+.env
+*.pem
+*-key.json
+google-auth-key.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
 env/
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+/staticfiles/
+/media/
+*.log
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

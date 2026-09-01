@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static ui %}
+
+{% block title %}{{ SITE_NAME }} - Stream anime, meet the fandom{% endblock %}
+
+{% block body %}
+  {% if show_hero and featured %}
+    {% comment %}
+      Spotlight: asymmetric, artwork behind, copy anchored left. Max four text
+      elements so the CTAs stay above the fold.
+    {% endcomment %}
+    <section class="spotlight" data-spotlight aria-roledescription="carousel" aria-label="Featured titles">
+      {% for anime in featured %}
+        <div class="spotlight__slide{% if forloop.first %} is-active{% endif %}" aria-hidden="{% if not forloop.first %}true{% endif %}">
+          {% if anime.backdrop_url %}
+            <img src="{{ anime.backdrop_url }}" alt="" {% if forloop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %} decoding="async">
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <div class="spotlight__body">
+        {% for anime in featured %}
+          <div class="spotlight__panel" data-spotlight-panel {% if not forloop.first %}hidden{% endif %}>
+            <p class="spotlight__meta">
+              {% if anime.recent_saves %}
+                <span class="badge badge--accent">
+                  <i class="ph ph-bookmark-simple" aria-hidden="true"></i>
+                  {{ anime.recent_saves }} saved this week
+                </span>
+              {% else %}
+                <span class="badge badge--accent">{{ anime.get_status_display }}</span>
+              {% endif %}
+              <span>{{ anime.release_year }}</span>
+              {% if anime.studio %}<span aria-hidden="true">&middot;</span><span>{{ anime.studio }}</span>{% endif %}
+            </p>
+            <h1 class="spotlight__title">{{ anime.name }}</h1>
+            <p class="spotlight__synopsis">{{ anime.synopsis }}</p>
+            <div class="spotlight__actions">
+              <a class="btn btn--primary btn--lg" href="{{ anime.get_absolute_url }}">
+                <i class="ph ph-play-circle" aria-hidden="true"></i> Watch now
+              </a>
+              {% if user.is_authenticated %}
+                <button class="btn btn--ghost btn--lg" type="button"
+                        data-title="{{ anime.name }}"
+                        data-watchlist-url="{% url 'streaming:anime-watchlist-toggle' anime.slug %}">
+                  <i class="ph ph-plus" aria-hidden="true"></i>
+                  <span data-watchlist-label>Add to My List</span>
+                </button>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if featured|length > 1 %}
+        <button class="spotlight__nav spotlight__nav--prev" type="button"
+                data-spotlight-prev aria-label="Previous featured title">
+          <i class="ph ph-caret-left" aria-hidden="true"></i>
+        </button>
+        <button class="spotlight__nav spotlight__nav--next" type="button"
+                data-spotlight-next aria-label="Next featured title">
+          <i class="ph ph-caret-right" aria-hidden="true"></i>
+        </button>
+
+        <div class="spotlight__dots" role="tablist" aria-label="Choose a featured title">
+          {% for anime in featured %}
+            <button class="spotlight__dot{% if forloop.first %} is-active{% endif %}" type="button" role="tab"
+                    aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                    aria-label="Show {{ anime.name }}"></button>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  <div class="page {% if show_hero and featured %}page--flush{% endif %}">
+    <div class="shell stack-lg">
+
+      {% if show_hero and trending %}
+        {# Horizontal rail: breadth without repeating the poster grid below. #}
+        <section class="section">
+          <div class="section__head">
+            <h2 class="section__title">Trending now</h2>
+            <a class="section__link" href="{% url 'streaming:browse' %}?sort=trending">
+              See all <i class="ph ph-arrow-right" aria-hidden="true"></i>
+            </a>
+          </div>
+          <div class="rail-wrap">
+            <button class="rail__nav rail__nav--prev" type="button" aria-label="Scroll left" hidden><i class="ph ph-caret-left" aria-hidden="true"></i></button>
+            <div class="rail">
+            {% for anime in trending %}
+              {% include "partials/poster_card.html" with anime=anime rank=forloop.counter %}
+            {% endfor %}
+            </div>
+            <button class="rail__nav rail__nav--next" type="button" aria-label="Scroll right" hidden><i class="ph ph-caret-right" aria-hidden="true"></i></button>
+          </div>
+        </section>
+      {% endif %}
+
+      {% if show_hero and genres %}
+        <section class="section">
+          <div class="section__head">
+            <h2 class="section__title">Pick a mood</h2>
+            <a class="section__link" href="{% url 'streaming:genre-list' %}">
+              All genres <i class="ph ph-arrow-right" aria-hidden="true"></i>
+            </a>
+          </div>
+          <div class="chip-row">
+            {% for genre in genres %}
+              <a class="chip" href="{{ genre.get_absolute_url }}">
+                {{ genre.name }} <span class="chip__count">{{ genre.anime_count }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+      <section class="section">
+        <div class="section__head">
+          <h2 class="section__title">{% if search %}Results for &ldquo;{{ search }}&rdquo;{% else %}Every title{% endif %}</h2>
+          <span class="text-muted text-mono">{{ result_count }} title{{ result_count|pluralize }}</span>
+        </div>
+
+        {% include "partials/catalog_toolbar.html" %}
+
+        {% if animes %}
+          <div class="grid-posters" style="margin-top: var(--space-5)">
+            {% for anime in animes %}
+              {% include "partials/poster_card.html" with anime=anime %}
+            {% endfor %}
+          </div>
+          {% include "partials/pagination.html" %}
+        {% else %}
+          <div style="margin-top: var(--space-5)">
+            {% include "partials/empty_state.html" with icon="ph-film-slate" title="Nothing matched that search" body="Try a different title, studio or genre." action_url="/" action_label="Reset" %}
+          </div>
+        {% endif %}
+      </section>
+
+    </div>
+  </div>
+{% endblock %}

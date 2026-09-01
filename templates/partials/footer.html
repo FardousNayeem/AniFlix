@@ -1,0 +1,49 @@
+<footer class="footer">
+  <div class="shell">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__brand">ANI<span>FLIX</span></div>
+        <p class="footer__blurb">Stream the series, book the meetups, wear the merch. Built for people who take their anime seriously.</p>
+      </div>
+
+      <div>
+        <h2 class="footer__heading">Watch</h2>
+        <ul class="footer__list">
+          <li><a href="{% url 'streaming:browse' %}">Browse all</a></li>
+          <li><a href="{% url 'streaming:genre-list' %}">Genres</a></li>
+          {% if user.is_authenticated %}<li><a href="{% url 'accounts:watchlist' %}">My List</a></li>{% endif %}
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer__heading">Community</h2>
+        <ul class="footer__list">
+          <li><a href="{% url 'events:list' %}">Upcoming events</a></li>
+          {% if user.is_authenticated %}<li><a href="{% url 'events:my-registrations' %}">My tickets</a></li>{% endif %}
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer__heading">Store</h2>
+        <ul class="footer__list">
+          <li><a href="{% url 'shop:product-list' %}">All merch</a></li>
+          <li><a href="{% url 'shop:cart' %}">Cart</a></li>
+          {% if user.is_authenticated %}<li><a href="{% url 'shop:order-list' %}">Orders</a></li>{% endif %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__base">
+      <span>&copy; {% now "Y" %} {{ SITE_NAME }}. All rights reserved.</span>
+      <span class="footer__base-right">
+        <a class="footer__social"
+           href="https://github.com/FardousNayeem"
+           target="_blank" rel="noopener noreferrer"
+           aria-label="ANIFLIX on GitHub">
+          <i class="ph ph-github-logo" aria-hidden="true"></i>
+          <span>FardousNayeem</span>
+        </a>
+      </span>
+    </div>
+  </div>
+</footer>
