@@ -117,6 +117,17 @@ class Anime(SlugModel, TimeStampedModel):
     )
     view_count = models.PositiveIntegerField(default=0, editable=False)
     genres = models.ManyToManyField(Genre, related_name="animes", blank=True)
+    anilist_id = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        unique=True,
+        db_index=True,
+        help_text=(
+            "The AniList entry this title is. Set by the catalogue seeder and "
+            "by `train_recommender`, and used to tell a recommendation that we "
+            "carry from one we do not."
+        ),
+    )
 
     objects = AnimeQuerySet.as_manager()
 

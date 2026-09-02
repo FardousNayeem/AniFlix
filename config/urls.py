@@ -17,6 +17,7 @@ urlpatterns = [
     path("profile/", include("apps.accounts.urls")),
     path("events/", include("apps.events.urls")),
     path("shop/", include("apps.shop.urls")),
+    path("recommend/", include("apps.recommender.urls")),
     path("", include("apps.streaming.urls")),
 ]
 

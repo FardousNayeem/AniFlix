@@ -8,7 +8,7 @@ from django.test import Client
 from django.test.utils import setup_test_environment
 setup_test_environment()
 
-import sqlite3, shutil, sys
+import json, sqlite3, shutil, sys
 from django.core.management import call_command
 from django.test.utils import setup_databases
 old_config = setup_databases(verbosity=0, interactive=False)
@@ -38,6 +38,9 @@ PUBLIC = [
     ("/accounts/login/", 200), ("/accounts/signup/", 200),
     ("/accounts/password/reset/", 200),
     ("/nope-does-not-exist/", 404),
+    # The recommender questionnaire is public: the widget rides on every page
+    # and has to be able to load before anybody signs in.
+    ("/recommend/questions/", 200),
 ]
 
 GATED = [
@@ -83,12 +86,33 @@ for url in [
     f"/anime/{anime.slug}/watchlist/",
     f"/anime/{anime.slug}/rate/",
     f"/shop/cart/update/{product.slug}/",
+    "/recommend/ask/",
 ]:
     r = owner_client.get(url)
     check(f"GET {url}", r.status_code == 405, f"(got {r.status_code})")
 
 r = owner_client.get(f"/events/{event.slug}/register/")
 check(f"GET /events/{event.slug}/register/", r.status_code == 302, f"(got {r.status_code})")
+
+print("\n== the recommender answers, or says why it cannot ==")
+# Anonymous on purpose: asking must not need an account.
+r = anon.post(
+    "/recommend/ask/",
+    data=json.dumps({"answers": {"mood": ["dark"]}}),
+    content_type="application/json",
+)
+if r.status_code == 503:
+    check("recommender", True, "(not trained on this machine; run train_recommender)")
+else:
+    body = r.json()
+    check("recommender answers an anonymous ask", r.status_code == 200 and body.get("ok"),
+          f"(got {r.status_code})")
+    check("recommender returns ranked titles", bool(body.get("results")),
+          f"(got {len(body.get('results', []))})")
+
+r = anon.post("/recommend/ask/", data=json.dumps({"answers": {"nonsense": ["x"]}}),
+              content_type="application/json")
+check("recommender rejects an unknown question", r.status_code == 400, f"(got {r.status_code})")
 
 print("\n== error pages render ==")
 # The /__errors__/ preview routes only exist under DEBUG, so the handlers are

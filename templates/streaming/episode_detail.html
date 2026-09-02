@@ -122,29 +122,37 @@
             {% if comments %}
               <div style="margin-top: var(--space-5)">
                 {% for comment in comments %}
+                  {% comment %}
+                    Three columns: avatar, body, and the delete control pinned
+                    to the right edge of the same row. The control is only
+                    rendered for the author or a staff account; the view
+                    enforces the same rule, so a hand-made POST gains nothing.
+                  {% endcomment %}
                   <article class="comment">
                     <span class="avatar">
                       {% if comment.user.avatar_url %}
                         <img src="{{ comment.user.avatar_url }}" alt="">
                       {% else %}{{ comment.user.public_name|initials }}{% endif %}
                     </span>
-                    <div>
+                    <div class="comment__main">
                       <div class="comment__head">
                         <span class="comment__author">{{ comment.user.public_name }}</span>
                         <span class="comment__time">{{ comment.created_at|timesince }} ago</span>
                       </div>
                       <p class="comment__body">{{ comment.body }}</p>
-                      {% if user == comment.user or user.is_staff %}
-                        <form class="comment__actions" method="post"
-                              action="{% url 'streaming:comment-delete' comment.id %}"
-                              data-confirm="Delete this comment?">
-                          {% csrf_token %}
-                          <button class="btn btn--quiet btn--sm btn--danger" type="submit">
-                            <i class="ph ph-trash" aria-hidden="true"></i> Delete
-                          </button>
-                        </form>
-                      {% endif %}
                     </div>
+                    {% if user == comment.user or user.is_staff %}
+                      <form class="comment__actions" method="post"
+                            action="{% url 'streaming:comment-delete' comment.id %}"
+                            data-confirm="Delete this comment?">
+                        {% csrf_token %}
+                        <button class="btn btn--quiet btn--danger btn--icon" type="submit"
+                                title="Delete this comment">
+                          <i class="ph ph-trash" aria-hidden="true"></i>
+                          <span class="visually-hidden">Delete this comment</span>
+                        </button>
+                      </form>
+                    {% endif %}
                   </article>
                 {% endfor %}
               </div>

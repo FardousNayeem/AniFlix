@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from apps.streaming.models import Rating, WatchlistEntry
+from apps.streaming.models import Comment, Rating, WatchlistEntry
 
 from .factories import make_anime, make_episode, make_genre, make_user
 
@@ -125,6 +125,72 @@ class EpisodeViewTests(TestCase):
         response = self.client.post(self.episode.get_absolute_url(), {"body": "   "})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(self.episode.comments.count(), 0)
+
+
+class CommentDeletionTests(TestCase):
+    """Who gets the delete control, and who the endpoint actually obeys."""
+
+    def setUp(self):
+        self.author = make_user("author@example.com")
+        self.anime = make_anime()
+        self.episode = make_episode(self.anime, number=1)
+        self.comment = Comment.objects.create(
+            user=self.author, episode=self.episode, body="That ending though."
+        )
+        self.url = reverse("streaming:comment-delete", args=[self.comment.id])
+
+    def delete_control_count(self, response) -> int:
+        return response.content.decode().count(self.url)
+
+    def test_the_author_sees_a_delete_control_on_their_own_comment(self):
+        self.client.force_login(self.author)
+        response = self.client.get(self.episode.get_absolute_url())
+        self.assertEqual(self.delete_control_count(response), 1)
+
+    def test_another_viewer_sees_no_delete_control(self):
+        self.client.force_login(make_user("stranger@example.com"))
+        response = self.client.get(self.episode.get_absolute_url())
+        self.assertEqual(self.delete_control_count(response), 0)
+
+    def test_an_anonymous_visitor_sees_no_delete_control(self):
+        response = self.client.get(self.episode.get_absolute_url())
+        self.assertEqual(self.delete_control_count(response), 0)
+
+    def test_staff_see_a_delete_control_on_someone_else_s_comment(self):
+        self.client.force_login(make_user("staff@example.com", is_staff=True))
+        response = self.client.get(self.episode.get_absolute_url())
+        self.assertEqual(self.delete_control_count(response), 1)
+
+    def test_the_author_can_delete_their_own_comment(self):
+        self.client.force_login(self.author)
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Comment.objects.count(), 0)
+
+    def test_another_user_cannot_delete_someone_else_s_comment(self):
+        """The control is hidden, so a refusal here means a hand-made POST fails too."""
+        self.client.force_login(make_user("stranger@example.com"))
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Comment.objects.count(), 1)
+
+    def test_staff_can_delete_any_comment(self):
+        self.client.force_login(make_user("staff@example.com", is_staff=True))
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Comment.objects.count(), 0)
+
+    def test_deletion_rejects_get(self):
+        self.client.force_login(self.author)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(Comment.objects.count(), 1)
+
+    def test_deletion_requires_sign_in(self):
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/accounts/login/", response.headers["Location"])
+        self.assertEqual(Comment.objects.count(), 1)
 
 
 class AsyncRatingTests(TestCase):

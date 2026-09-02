@@ -1,0 +1,8 @@
+# Training-only dependencies.
+#
+# The site does not need these. `harvest_corpus` and `train_recommender` do:
+# they download the corpus and fit the model, then write a JSON artifact that
+# the running app reads with the standard library alone. Keep it that way —
+# a deploy should not carry a linear algebra stack to serve dot products.
+-r requirements.txt
+numpy==2.5.2

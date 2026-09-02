@@ -141,6 +141,10 @@
 }
 
 .poster__frame {
+  /* An anchor is inline, and aspect-ratio does nothing to an inline box, so
+     without this a card with no artwork collapses to zero height and the
+     whole tile disappears. */
+  display: block;
   position: relative;
   aspect-ratio: 2 / 3;
   overflow: hidden;

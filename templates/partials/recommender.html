@@ -1,0 +1,50 @@
+{% comment %}
+  The recommendation widget: a launcher and the panel it opens.
+
+  Both start hidden and are revealed by recommender.js once it has confirmed
+  a trained model exists. A visitor without scripting, or a server without a
+  model, sees nothing rather than a button that cannot answer.
+
+  The conversation itself is built in script. Only the shell is here, so the
+  markup that matters for layout and theming stays reviewable in one place.
+{% endcomment %}
+<div class="recos" data-recos
+     data-questions-url="{% url 'recommender:questions' %}"
+     data-ask-url="{% url 'recommender:ask' %}"
+     hidden>
+
+  <button class="recos__launcher" type="button" data-recos-open
+          aria-expanded="false" aria-controls="recos-panel">
+    <i class="ph ph-sparkle" aria-hidden="true"></i>
+    <span class="visually-hidden">Find me something to watch</span>
+  </button>
+
+  <section class="recos__panel" id="recos-panel" data-recos-panel
+           role="dialog" aria-modal="false" aria-labelledby="recos-title" hidden>
+
+    <header class="recos__head">
+      <span class="recos__avatar" aria-hidden="true"><i class="ph ph-sparkle"></i></span>
+      <div class="recos__heading">
+        <h2 class="recos__title" id="recos-title">What should I watch?</h2>
+        <p class="recos__subtitle" data-recos-subtitle>Five taps and I will pick.</p>
+      </div>
+      <button class="recos__close btn btn--quiet btn--icon" type="button" data-recos-close>
+        <i class="ph ph-x" aria-hidden="true"></i>
+        <span class="visually-hidden">Close</span>
+      </button>
+    </header>
+
+    <div class="recos__thread" data-recos-thread role="log" aria-live="polite"></div>
+
+    <form class="recos__compose" data-recos-form>
+      <label class="visually-hidden" for="recos-text">Describe what you feel like watching</label>
+      <input class="recos__input" id="recos-text" type="text" autocomplete="off"
+             placeholder="…or just describe it, or name an anime you liked"
+             maxlength="300" data-recos-input>
+      <button class="recos__send btn btn--primary btn--icon" type="submit" data-recos-send>
+        <i class="ph ph-paper-plane-tilt" aria-hidden="true"></i>
+        <span class="visually-hidden">Send</span>
+      </button>
+    </form>
+  </section>
+</div>

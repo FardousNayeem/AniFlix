@@ -99,6 +99,9 @@
   --z-nav: 40;
   --z-drawer: 50;
   --z-toast: 60;
+  /* The recommendation widget floats over the page but under a toast, so a
+     confirmation is never hidden behind the thing that triggered it. */
+  --z-widget: 55;
 }
 
 /* Motion is decorative here; every animation below collapses under this. */

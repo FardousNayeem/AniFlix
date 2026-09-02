@@ -12,7 +12,9 @@
    ------------------------------------------------------------------------- */
 .spotlight {
   position: relative;
-  min-height: min(72dvh, 620px);
+  /* 10% taller than it was, now that the art behind it is AniList's wide
+     banner rather than a portrait cover stretched to fit. */
+  min-height: min(79dvh, 682px);
   display: grid;
   align-items: end;
   overflow: hidden;
@@ -34,6 +36,11 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* A banner is already landscape and crops at the sides, where centring is
+     right. This matters for the titles AniList has no banner for, which fall
+     back to the portrait cover: there the crop is vertical, and the subject
+     is in the upper third rather than the middle. */
+  object-position: 50% 25%;
 }
 
 .spotlight__slide::after {
@@ -481,7 +488,8 @@
 /* Comments */
 .comment {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
   gap: var(--space-3);
   padding: var(--space-4) 0;
   border-bottom: 1px solid var(--border);
@@ -500,7 +508,10 @@
 .comment__time { font-size: var(--step--1); color: var(--text-muted); }
 .comment__body { margin-top: var(--space-2); color: var(--text-soft); white-space: pre-line; }
 
-.comment__actions { margin-top: var(--space-2); }
+/* Third grid column: the delete control sits on the right edge of the
+   comment's own row, level with the author line. It is an icon so the row
+   stays legible at phone widths, and it carries its own hidden label. */
+.comment__actions { justify-self: end; }
 
 /* -------------------------------------------------------------------------
    Events

@@ -1,0 +1,444 @@
+/* =========================================================================
+   The recommendation widget.
+
+   Its own file because it is one self-contained feature that sits on top of
+   every page: keeping it here means it can be removed by deleting two lines,
+   and it never has to fight the page styles it floats over.
+
+   Everything reads from tokens.css. Nothing here hard-codes a colour.
+   ========================================================================= */
+
+.recos {
+  position: fixed;
+  right: var(--space-5);
+  bottom: var(--space-5);
+  z-index: var(--z-widget);
+  display: flex;
+  /* Reversed, so the launcher — first in the DOM, because it is the control
+     that opens the panel — renders below the panel it opened. */
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+/* The back-to-top control lives in this same corner. Lift it clear of the
+   launcher, but only when the widget is actually showing — on a server with
+   no trained model it stays hidden, and the arrow keeps its usual place. */
+.recos:not([hidden]) ~ .back-to-top {
+  bottom: calc(var(--space-5) + 3.5rem + var(--space-3));
+}
+
+/* --- launcher ----------------------------------------------------------- */
+.recos__launcher {
+  position: relative;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--r-full);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font-size: 1.5rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md), 0 0 0 0 var(--accent-glow);
+  transition: transform var(--fast) var(--ease), box-shadow var(--normal) var(--ease),
+    background var(--fast) var(--ease);
+}
+
+.recos__launcher:hover {
+  background: var(--accent-bright);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), 0 0 0 10px var(--accent-glow);
+}
+
+.recos__launcher:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+
+/* One slow breath, so the button reads as available rather than urgent.
+   Collapses to nothing under prefers-reduced-motion via the token reset. */
+.recos__launcher::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid var(--accent);
+  animation: recos-pulse 3.2s var(--ease) infinite;
+  pointer-events: none;
+}
+
+@keyframes recos-pulse {
+  0% { opacity: 0.7; transform: scale(1); }
+  70%, 100% { opacity: 0; transform: scale(1.5); }
+}
+
+.recos.is-open .recos__launcher::after { animation: none; }
+
+/* --- panel -------------------------------------------------------------- */
+
+/* A class selector beats the browser's own [hidden] rule, so display has to
+   be handed back explicitly. Without this the panel is open on every page. */
+.recos__panel[hidden] { display: none; }
+
+.recos__panel {
+  width: min(23.5rem, calc(100vw - var(--space-5) * 2));
+  max-height: min(34rem, calc(100vh - var(--nav-height) - var(--space-8)));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-surface);
+  box-shadow: var(--shadow-lg);
+  transform-origin: bottom right;
+  animation: recos-in var(--normal) var(--ease);
+}
+
+@keyframes recos-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+.recos__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.recos__avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-full);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 1.15rem;
+}
+
+.recos__heading { min-width: 0; }
+
+.recos__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--step-0);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.recos__subtitle {
+  margin: 0;
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+
+/* --- thread ------------------------------------------------------------- */
+.recos__thread {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  scrollbar-width: thin;
+}
+
+.recos__msg {
+  max-width: 88%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--r-surface);
+  font-size: var(--step--1);
+  line-height: 1.5;
+  animation: recos-msg var(--normal) var(--ease);
+}
+
+@keyframes recos-msg {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.recos__msg--bot {
+  align-self: flex-start;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: var(--r-small);
+  color: var(--text);
+}
+
+.recos__msg--user {
+  align-self: flex-end;
+  background: var(--accent-dim);
+  border: 1px solid var(--border-accent);
+  border-bottom-right-radius: var(--r-small);
+  color: var(--text);
+}
+
+.recos__hint {
+  margin: var(--space-1) 0 0;
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+
+/* --- answer chips ------------------------------------------------------- */
+.recos__choices {
+  align-self: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  max-width: 100%;
+}
+
+.recos__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--r-full);
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-soft);
+  font: inherit;
+  font-size: var(--step--1);
+  cursor: pointer;
+  transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease),
+    background var(--fast) var(--ease);
+}
+
+.recos__chip:hover:not(:disabled) {
+  border-color: var(--border-accent);
+  color: var(--text);
+  background: var(--accent-dim);
+}
+
+.recos__chip[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+.recos__chip:disabled { opacity: 0.45; cursor: not-allowed; }
+.recos__chip .ph { color: var(--accent); }
+
+.recos__confirm {
+  align-self: flex-start;
+  margin-top: calc(var(--space-1) * -1);
+}
+
+/* --- thinking ----------------------------------------------------------- */
+.recos__thinking {
+  display: inline-flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.recos__thinking span {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: var(--r-full);
+  background: var(--text-muted);
+  animation: recos-blink 1.2s var(--ease) infinite;
+}
+
+.recos__thinking span:nth-child(2) { animation-delay: 0.15s; }
+.recos__thinking span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes recos-blink {
+  0%, 60%, 100% { opacity: 0.25; }
+  30% { opacity: 1; }
+}
+
+/* --- results ------------------------------------------------------------ */
+.recos__results {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.recos__card {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--r-control);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease),
+    transform var(--fast) var(--ease);
+}
+
+a.recos__card:hover {
+  border-color: var(--border-accent);
+  background: var(--surface-3);
+  transform: translateY(-1px);
+}
+
+/* Recommended but not stocked. Dimmed rather than hidden: the ranking put it
+   here honestly, and pretending otherwise would be the dishonest option. */
+.recos__card--elsewhere {
+  border-style: dashed;
+  background: transparent;
+}
+
+.recos__card--elsewhere .recos__poster { opacity: 0.65; }
+
+.recos__unavailable {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+
+.recos__unavailable .ph { color: var(--warning); }
+
+.recos__poster {
+  width: 3.25rem;
+  height: 4.5rem;
+  object-fit: cover;
+  border-radius: var(--r-small);
+  background: var(--surface-3);
+  display: block;
+}
+
+/* A title with no artwork gets a marked placeholder rather than a grey hole. */
+.recos__poster:not(img) {
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  background: linear-gradient(150deg, var(--surface-3), var(--surface-2));
+}
+
+.recos__poster:not(img)::after {
+  content: "\e2ca";  /* ph-image */
+  font-family: "Phosphor";
+  font-size: 1.25rem;
+}
+
+.recos__card-body { min-width: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+
+.recos__name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--step-0);
+  line-height: 1.2;
+}
+
+.recos__meta {
+  font-size: var(--step--1);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.recos__reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.recos__reason {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--r-full);
+  background: var(--accent-dim);
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* Match strength. The bar is the number, so the number can stay small. */
+.recos__match {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+
+.recos__bar {
+  flex: 1;
+  height: 0.3rem;
+  border-radius: var(--r-full);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.recos__bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.recos__note {
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+
+.recos__actions {
+  align-self: flex-start;
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* --- compose ------------------------------------------------------------ */
+.recos__compose {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.recos__input {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--r-control);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-deep);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--step--1);
+}
+
+.recos__input::placeholder { color: var(--text-muted); }
+
+.recos__input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.recos__send { width: 2.5rem; height: 2.5rem; }
+
+/* --- phones: a bottom sheet, not a floating card ------------------------ */
+@media (max-width: 30rem) {
+  .recos {
+    right: var(--space-3);
+    left: var(--space-3);
+    bottom: var(--space-3);
+  }
+
+  .recos:not([hidden]) ~ .back-to-top {
+    bottom: calc(var(--space-3) + 3.5rem + var(--space-3));
+  }
+
+  .recos__panel {
+    width: 100%;
+    max-height: min(80vh, calc(100vh - var(--space-6)));
+  }
+}

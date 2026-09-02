@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="{% static 'css/components.css' %}">
   <link rel="stylesheet" href="{% static 'css/layout.css' %}">
   <link rel="stylesheet" href="{% static 'css/pages.css' %}">
+  <link rel="stylesheet" href="{% static 'css/recommender.css' %}">
   {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -29,6 +30,13 @@
   <main id="main">
     {% block body %}{% endblock %}
   </main>
+
+  {% comment %}
+    Before the back-to-top control on purpose: they share the bottom-right
+    corner, and recommender.css lifts that control clear of the launcher with
+    a sibling selector, which needs the widget to come first.
+  {% endcomment %}
+  {% include "partials/recommender.html" %}
 
   <button class="back-to-top" type="button" data-back-to-top aria-label="Back to top">
     <i class="ph ph-arrow-up" aria-hidden="true"></i>
@@ -44,6 +52,7 @@
   {% endif %}
 
   <script src="{% static 'js/app.js' %}" defer></script>
+  <script src="{% static 'js/recommender.js' %}" defer></script>
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>

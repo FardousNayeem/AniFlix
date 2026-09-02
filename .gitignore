@@ -28,3 +28,7 @@ htmlcov/
 .vscode/
 .idea/
 .DS_Store
+
+# Recommender training corpus (a build input; re-downloadable with
+# `manage.py harvest_corpus`). The trained model in data/ is committed.
+/data/anilist_corpus.json.gz

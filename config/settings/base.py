@@ -47,6 +47,7 @@ LOCAL_APPS = [
     "apps.streaming",
     "apps.events",
     "apps.shop",
+    "apps.recommender",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -205,6 +206,19 @@ SPOTLIGHT_SIZE = int(env("SPOTLIGHT_SIZE", default="3"))
 SPOTLIGHT_WINDOW_DAYS = int(env("SPOTLIGHT_WINDOW_DAYS", default="7"))
 SHOP_PAGE_SIZE = int(env("SHOP_PAGE_SIZE", default="12"))
 CART_MAX_QUANTITY_PER_ITEM = int(env("CART_MAX_QUANTITY_PER_ITEM", default="10"))
+
+# Recommender. The corpus is a build input (gitignored, downloaded by
+# `harvest_corpus`); the model is the trained artifact the site actually
+# serves, committed so a deploy needs neither network nor numpy.
+RECOMMENDER_DATA_DIR = Path(env("RECOMMENDER_DATA_DIR", default=str(BASE_DIR / "data")))
+RECOMMENDER_CORPUS_PATH = RECOMMENDER_DATA_DIR / "anilist_corpus.json.gz"
+RECOMMENDER_MODEL_PATH = RECOMMENDER_DATA_DIR / "taste_model.json.gz"
+# How many titles a single ask returns.
+RECOMMENDER_RESULT_COUNT = int(env("RECOMMENDER_RESULT_COUNT", default="3"))
+# Ceiling on the training set, taken most-popular-first. The corpus can be
+# larger than this; past a point the extra titles are ones nobody asks for and
+# they cost artifact size and scoring time on every request.
+RECOMMENDER_MAX_TITLES = int(env("RECOMMENDER_MAX_TITLES", default="9000"))
 
 PAYMENT_GATEWAY = env("PAYMENT_GATEWAY", default="dummy")
 SSLCOMMERZ_STORE_ID = env("SSLCOMMERZ_STORE_ID", default="")
